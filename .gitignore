@@ -28,4 +28,11 @@ target/
 *.properties
 app/app.iml
 
+# Keep keystore properties for build
+!keystore.properties
+
+# Exclude keystore files
+*.keystore
+*.jks
+
 *.md

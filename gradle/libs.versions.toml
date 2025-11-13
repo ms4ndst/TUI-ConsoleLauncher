@@ -1,0 +1,50 @@
+[versions]
+# Plugin versions
+agp = "8.7.0"
+kotlin = "2.0.21"
+
+# SDK versions
+compileSdk = "35"
+minSdk = "21"
+targetSdk = "35"
+
+# AndroidX versions (latest stable as of Nov 2025)
+appcompat = "1.7.0"
+localbroadcastmanager = "1.1.0"
+
+# Networking & parsing libraries (latest stable)
+okhttp = "4.12.0"
+htmlcleaner = "2.29"
+jsonpath = "2.10.0"
+jsonsmart = "2.5.1"
+jsoup = "1.18.1"
+
+# Utilities
+comparestring = "1.0.9"
+
+[libraries]
+# AndroidX
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-localbroadcastmanager = { group = "androidx.localbroadcastmanager", name = "localbroadcastmanager", version.ref = "localbroadcastmanager" }
+
+# Kotlin
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+
+# Networking & HTTP
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+
+# HTML & XML parsing
+htmlcleaner = { group = "net.sourceforge.htmlcleaner", name = "htmlcleaner", version.ref = "htmlcleaner" }
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+
+# JSON processing
+jsonpath = { group = "com.jayway.jsonpath", name = "json-path", version.ref = "jsonpath" }
+jsonsmart = { group = "net.minidev", name = "json-smart", version.ref = "jsonsmart" }
+
+# String comparison utilities
+comparestring = { group = "it.andreuzzi", name = "CompareString2", version.ref = "comparestring" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }

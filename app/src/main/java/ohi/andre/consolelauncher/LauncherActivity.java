@@ -11,10 +11,10 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -75,21 +75,22 @@ public class LauncherActivity extends AppCompatActivity implements Reloadable {
 
     private boolean openKeyboardOnStart, canApplyTheme, backButtonEnabled;
 
-    private Set<ReloadMessageCategory> categories;
+    private Set<ReloadMessageCategory> categories = new HashSet<>();
     private Runnable stopActivity = () -> {
-            dispose();
-            finish();
+        dispose();
+        finish();
 
-            Intent startMain = new Intent(Intent.ACTION_MAIN);
-            startMain.addCategory(Intent.CATEGORY_HOME);
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
 
-            CharSequence reloadMessage = Tuils.EMPTYSTRING;
+        CharSequence reloadMessage = Tuils.EMPTYSTRING;
+        if (categories != null && !categories.isEmpty()) {
             for (ReloadMessageCategory c : categories) {
                 reloadMessage = TextUtils.concat(reloadMessage, Tuils.NEWLINE, c.text());
             }
-            startMain.putExtra(Reloadable.MESSAGE, reloadMessage);
-
-            startActivity(startMain);
+        }
+        startMain.putExtra(Reloadable.MESSAGE, reloadMessage);
+        startActivity(startMain);
     };
 
     private Inputable in = new Inputable() {
@@ -199,14 +200,13 @@ public class LauncherActivity extends AppCompatActivity implements Reloadable {
             return;
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED  &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, LauncherActivity.STARTING_PERMISSION);
-        } else {
-            canApplyTheme = true;
-            finishOnCreate();
-        }
+        // Initialize Tuils folder with context for proper storage access
+        Tuils.initFolder(this);
+        
+        // Storage permissions are not required with app-scoped storage.
+        // Proceed directly to initialization.
+        canApplyTheme = true;
+        finishOnCreate();
     }
 
     private void finishOnCreate() {
@@ -230,7 +230,21 @@ public class LauncherActivity extends AppCompatActivity implements Reloadable {
         filter1.addAction(PublicIOReceiver.ACTION_OUTPUT);
 
         publicIOReceiver = new PublicIOReceiver();
-        getApplicationContext().registerReceiver(publicIOReceiver, filter1);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Restrict to app-only broadcasts to satisfy Android 14+ requirements
+                getApplicationContext().registerReceiver(publicIOReceiver, filter1, android.content.Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                getApplicationContext().registerReceiver(publicIOReceiver, filter1);
+            }
+        } catch (SecurityException se) {
+            // Fallback to not exported in case the platform enforces flags
+            try {
+                getApplicationContext().registerReceiver(publicIOReceiver, filter1, android.content.Context.RECEIVER_NOT_EXPORTED);
+            } catch (Throwable t) {
+                Tuils.log(t);
+            }
+        }
 
         int requestedOrientation = XMLPrefsManager.getInt(Behavior.orientation);
         if(requestedOrientation >= 0 && requestedOrientation != 2) {
@@ -321,13 +335,18 @@ public class LauncherActivity extends AppCompatActivity implements Reloadable {
         }
 
         setContentView(R.layout.base_view);
+        
+        // Handle window insets for Android 14+ to prevent status bar overlap
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            getWindow().setDecorFitsSystemWindows(false);
+        }
 
         if(XMLPrefsManager.getBoolean(Ui.show_restart_message)) {
             CharSequence s = getIntent().getCharSequenceExtra(Reloadable.MESSAGE);
             if(s != null) out.onOutput(Tuils.span(s, XMLPrefsManager.getColor(Theme.restart_message_color)));
         }
 
-        categories = new HashSet<>();
+    //        categories already initialized at declaration
 
         main = new MainManager(this);
 
@@ -413,8 +432,8 @@ public class LauncherActivity extends AppCompatActivity implements Reloadable {
         if(ui != null) ui.dispose();
 
         XMLPrefsManager.dispose();
-        RegexManager.instance.dispose();
-        TimeManager.instance.dispose();
+        if(RegexManager.instance != null) RegexManager.instance.dispose();
+        if(TimeManager.instance != null) TimeManager.instance.dispose();
 
         disposed = true;
     }

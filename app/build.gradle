@@ -1,56 +1,49 @@
-apply plugin: 'com.android.application'
-android {
-    compileSdkVersion 27
-    buildToolsVersion '28.0.3'
-    dexOptions {
-    }
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.parcelize)
+}
 
+android {
+    namespace 'ohi.andre.consolelauncher'
+    compileSdk = libs.versions.compileSdk.get().toInteger()
     defaultConfig {
         applicationId "ohi.andre.consolelauncher"
-
-        minSdkVersion 14
-        targetSdkVersion 27
-        flavorDimensions "default"
-
-        versionName "v6.15"
-        versionCode 205
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
+        versionName "v6.16"
+        versionCode 206
     }
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            zipAlignEnabled true
         }
     }
-    productFlavors {
-        fdroid {
-        }
-        playstore {
-        }
+    buildFeatures {
+        buildConfig true
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-    dependencies {
-        implementation 'com.android.support:appcompat-v7:27.1.1'
+    kotlinOptions {
+        jvmTarget = '17'
     }
-    lintOptions {
+    lint {
         checkReleaseBuilds false
     }
-    android.applicationVariants.all { variant ->
-        def formattedDate = new Date().format('hh.mm')
-
-        variant.outputs.all {
-            outputFileName = "./${variant.versionName}/${variant.applicationId}_${variant.getFlavorName()}_${variant.versionCode}_${formattedDate}.apk"
-        }
-    }
 }
+
 dependencies {
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
-    implementation 'net.sourceforge.htmlcleaner:htmlcleaner:2.6'
-    implementation 'com.jayway.jsonpath:json-path:2.4.0'
-    implementation 'org.jsoup:jsoup:1.11.3'
-    implementation 'it.andreuzzi:CompareString2:1.0.9'
+    api libs.androidx.appcompat
+    implementation libs.androidx.localbroadcastmanager
+    implementation libs.kotlin.stdlib
+    implementation libs.okhttp
+    implementation libs.htmlcleaner
+    implementation libs.jsonpath
+    implementation libs.jsonsmart
+    implementation libs.jsoup
+    implementation libs.comparestring
 }

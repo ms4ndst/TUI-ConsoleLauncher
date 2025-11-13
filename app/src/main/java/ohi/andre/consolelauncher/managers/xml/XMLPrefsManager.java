@@ -27,6 +27,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import ohi.andre.consolelauncher.R;
 import ohi.andre.consolelauncher.managers.xml.classes.XMLPrefsElement;
+import ohi.andre.consolelauncher.managers.xml.classes.XMLPrefsEntry;
 import ohi.andre.consolelauncher.managers.xml.classes.XMLPrefsList;
 import ohi.andre.consolelauncher.managers.xml.classes.XMLPrefsSave;
 import ohi.andre.consolelauncher.managers.xml.options.Behavior;
@@ -331,7 +332,12 @@ public class XMLPrefsManager {
 //                Tuils.log("parent", prefsSave.parent().toString());
 //                Tuils.log("values tostring", prefsSave.parent().getValues().toString());
 //            }
-            return (T) transform(prefsSave.parent().getValues().get(prefsSave).value, c);
+                XMLPrefsEntry entry = prefsSave.parent().getValues().get(prefsSave);
+                if (entry == null || entry.value == null) {
+                    // Return default value instead of throwing
+                    return (T) transform(prefsSave.defaultValue(), c);
+                }
+                return (T) transform(entry.value, c);
         } catch (Exception e) {
             Tuils.log(e);
 //            this will happen if the option is not found
@@ -346,7 +352,8 @@ public class XMLPrefsManager {
     }
 
     public static String get(XMLPrefsSave prefsSave) {
-        return get(String.class, prefsSave);
+        String v = get(String.class, prefsSave);
+        return v == null ? "" : v;
     }
 
     public static String get(XMLPrefsRoot root, String s) {
@@ -721,6 +728,14 @@ public class XMLPrefsManager {
     public static boolean resetFile(File f, String name) {
         try {
             if(f.exists()) f.delete();
+
+            File parent = f.getParentFile();
+            if(parent != null && !parent.exists()) {
+                // Ensure parent directories exist
+                if(!parent.mkdirs()) {
+                    return false;
+                }
+            }
 
             FileOutputStream stream = new FileOutputStream(f);
             stream.write(XML_DEFAULT.getBytes());

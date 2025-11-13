@@ -5,6 +5,8 @@ import android.content.Context;
 import java.util.ArrayList;
 
 import ohi.andre.consolelauncher.managers.AppsManager;
+import ohi.andre.consolelauncher.managers.LaunchInfo;
+// You DO need to import the parent class to reference its nested class.
 import ohi.andre.consolelauncher.managers.xml.classes.XMLPrefsSave;
 
 @SuppressWarnings("deprecation")
@@ -55,8 +57,11 @@ public abstract class ExecutePack {
         return (XMLPrefsSave) get();
     }
 
-    public AppsManager.LaunchInfo getLaunchInfo() {
-        return (AppsManager.LaunchInfo) get();
+    // FIXED: The reference is now simply LaunchInfo.
+    // This tells the Java compiler to look for a static nested class named 'LaunchInfo'
+    // inside the 'AppsManager' class, which is exactly how Kotlin compiles it.
+    public LaunchInfo getLaunchInfo() {
+        return (LaunchInfo) get();
     }
 
     public void set(Object[] args) {

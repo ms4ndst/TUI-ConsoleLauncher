@@ -26,12 +26,13 @@ import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
+import ohi.andre.consolelauncher.BuildConfig;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
-import android.support.v4.content.FileProvider;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.core.content.FileProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -1380,8 +1381,21 @@ public class Tuils {
     }
 
     private static File getTuiFolder() {
-        File internalDir = Environment.getExternalStorageDirectory();
-        return new File(internalDir, TUI_FOLDER);
+        // Use app-specific external files directory to comply with scoped storage
+        // Note: This requires Context to be set via initFolder(Context) before use
+        if (contextRef != null) {
+            Context context = contextRef.get();
+            if (context != null) {
+                File externalFilesDir = context.getExternalFilesDir(null);
+                if (externalFilesDir != null) {
+                    return new File(externalFilesDir, TUI_FOLDER);
+                }
+            }
+        }
+        // Fallback to old method if context not available
+        File externalRoot = Environment.getExternalStorageDirectory();
+        File appExternalFiles = new File(externalRoot, "Android/data/" + BuildConfig.APPLICATION_ID + "/files");
+        return new File(appExternalFiles, TUI_FOLDER);
     }
 
     public static double eval(final String str) {
@@ -1480,13 +1494,19 @@ public class Tuils {
 
     private static final int FILEUPDATE_DELAY = 100;
     private static File folder = null;
+    private static java.lang.ref.WeakReference<Context> contextRef = null;
+    
+    public static void initFolder(Context context) {
+        contextRef = new java.lang.ref.WeakReference<>(context);
+    }
+    
     public static File getFolder() {
         if(folder != null) return folder;
 
         int elapsedTime = 0;
         while (elapsedTime < 1000) {
             File tuiFolder = Tuils.getTuiFolder();
-            if(tuiFolder != null && ((tuiFolder.exists() && tuiFolder.isDirectory()) || tuiFolder.mkdir())) {
+            if(tuiFolder != null && ((tuiFolder.exists() && tuiFolder.isDirectory()) || tuiFolder.mkdirs())) {
                 folder = tuiFolder;
                 return folder;
             }
@@ -1530,30 +1550,35 @@ public class Tuils {
     }
 
     public static String getNetworkType(Context context) {
-        TelephonyManager mTelephonyManager = (TelephonyManager)
-                context.getSystemService(Context.TELEPHONY_SERVICE);
-        int networkType = mTelephonyManager.getNetworkType();
-        switch (networkType) {
-            case TelephonyManager.NETWORK_TYPE_GPRS:
-            case TelephonyManager.NETWORK_TYPE_EDGE:
-            case TelephonyManager.NETWORK_TYPE_CDMA:
-            case TelephonyManager.NETWORK_TYPE_1xRTT:
-            case TelephonyManager.NETWORK_TYPE_IDEN:
-                return "2g";
-            case TelephonyManager.NETWORK_TYPE_UMTS:
-            case TelephonyManager.NETWORK_TYPE_EVDO_0:
-            case TelephonyManager.NETWORK_TYPE_EVDO_A:
-            case TelephonyManager.NETWORK_TYPE_HSDPA:
-            case TelephonyManager.NETWORK_TYPE_HSUPA:
-            case TelephonyManager.NETWORK_TYPE_HSPA:
-            case TelephonyManager.NETWORK_TYPE_EVDO_B:
-            case TelephonyManager.NETWORK_TYPE_EHRPD:
-            case TelephonyManager.NETWORK_TYPE_HSPAP:
-                return "3g";
-            case TelephonyManager.NETWORK_TYPE_LTE:
-                return "4g";
-            default:
-                return "unknown";
+        try {
+            TelephonyManager mTelephonyManager = (TelephonyManager)
+                    context.getSystemService(Context.TELEPHONY_SERVICE);
+            int networkType = mTelephonyManager.getNetworkType();
+            switch (networkType) {
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                case TelephonyManager.NETWORK_TYPE_IDEN:
+                    return "2g";
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                case TelephonyManager.NETWORK_TYPE_EHRPD:
+                case TelephonyManager.NETWORK_TYPE_HSPAP:
+                    return "3g";
+                case TelephonyManager.NETWORK_TYPE_LTE:
+                    return "4g";
+                default:
+                    return "unknown";
+            }
+        } catch (SecurityException e) {
+            // Android 14+ requires READ_PHONE_STATE permission
+            return "unknown";
         }
     }
 
@@ -1588,6 +1613,49 @@ public class Tuils {
         } catch (IOException e) {
             Tuils.log(e);
             return count;
+        }
+    }
+
+    /**
+     * Copy a file from assets to the app's data directory if it doesn't exist.
+     * @param context Application context
+     * @param assetFileName Name of the file in assets folder
+     * @param targetFile Destination file
+     * @return true if file was copied or already exists, false on error
+     */
+    public static boolean copyAssetFileIfNeeded(Context context, String assetFileName, File targetFile) {
+        if (targetFile.exists()) {
+            return true;
+        }
+
+        try {
+            // Ensure parent directory exists
+            File parent = targetFile.getParentFile();
+            if (parent != null && !parent.exists()) {
+                if (!parent.mkdirs()) {
+                    Tuils.log("Failed to create parent directory: " + parent.getAbsolutePath());
+                    return false;
+                }
+            }
+
+            // Copy from assets
+            InputStream in = context.getAssets().open(assetFileName);
+            FileOutputStream out = new FileOutputStream(targetFile);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+
+            in.close();
+            out.flush();
+            out.close();
+            return true;
+        } catch (IOException e) {
+            Tuils.log("Failed to copy asset " + assetFileName + " to " + targetFile.getAbsolutePath() + ": " + e.getMessage());
+            Tuils.log(e);
+            return false;
         }
     }
 

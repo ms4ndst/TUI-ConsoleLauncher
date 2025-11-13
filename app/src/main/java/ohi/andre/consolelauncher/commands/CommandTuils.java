@@ -13,6 +13,7 @@ import ohi.andre.consolelauncher.commands.main.MainPack;
 import ohi.andre.consolelauncher.commands.main.Param;
 import ohi.andre.consolelauncher.commands.main.specific.ParamCommand;
 import ohi.andre.consolelauncher.managers.AppsManager;
+import ohi.andre.consolelauncher.managers.LaunchInfo;
 import ohi.andre.consolelauncher.managers.ContactManager;
 import ohi.andre.consolelauncher.managers.FileManager;
 import ohi.andre.consolelauncher.managers.FileManager.DirInfo;
@@ -414,17 +415,17 @@ public class CommandTuils {
     }
 
     private static ArgInfo activityName(String input, AppsManager apps) {
-        AppsManager.LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.SHOWN_APPS);
+        LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.SHOWN_APPS);
         return new ArgInfo(info, null, info != null, info != null ? 1 : 0);
     }
 
     private static ArgInfo hiddenPackage(String input, AppsManager apps) {
-        AppsManager.LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.HIDDEN_APPS);
+        LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.HIDDEN_APPS);
         return new ArgInfo(info, null, info != null, info != null ? 1 : 0);
     }
 
     private static ArgInfo allPackages(String input, AppsManager apps) {
-        AppsManager.LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.SHOWN_APPS);
+        LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.SHOWN_APPS);
         if(info == null) {
             info = apps.findLaunchInfoWithLabel(input, AppsManager.HIDDEN_APPS);
         }
@@ -433,7 +434,7 @@ public class CommandTuils {
     }
 
     private static ArgInfo defaultApp(String input, AppsManager apps) {
-        AppsManager.LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.SHOWN_APPS);
+        LaunchInfo info = apps.findLaunchInfoWithLabel(input, AppsManager.SHOWN_APPS);
         if(info == null) {
             return new ArgInfo(input, null, true, 1);
         } else {

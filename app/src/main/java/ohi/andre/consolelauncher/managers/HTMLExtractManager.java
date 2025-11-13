@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -314,6 +314,10 @@ public class HTMLExtractManager {
         formats = new ArrayList<>();
 
         File file = new File(Tuils.getFolder(), PATH);
+        
+        // Copy default HTML extract file from assets if it doesn't exist
+        Tuils.copyAssetFileIfNeeded(context, PATH, file);
+        
         if(!file.exists()) {
             resetFile(file, NAME);
         }

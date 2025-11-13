@@ -6,6 +6,13 @@
     height="60">
 </a>
 
+## Compatibility
+
+✅ **Android 14+ (API 35) Compatible**
+- Updated to Gradle 8.10.2, AGP 8.7.0, Kotlin 2.0.21
+- Full AndroidX migration
+- Scoped storage support
+- Modern security and permission handling
 
 ## Useful links
 

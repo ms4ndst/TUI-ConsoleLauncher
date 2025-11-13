@@ -32,6 +32,13 @@ public class TimeManager {
 
     public static TimeManager instance;
 
+    public static TimeManager instance(Context context) {
+        if (instance == null) {
+            instance = new TimeManager(context);
+        }
+        return instance;
+    }
+
     public TimeManager(Context context) {
         String format = XMLPrefsManager.get(Behavior.time_format);
         String separator = XMLPrefsManager.get(Behavior.time_format_separator);

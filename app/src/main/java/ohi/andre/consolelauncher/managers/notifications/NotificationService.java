@@ -16,7 +16,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
@@ -78,6 +78,13 @@ public class NotificationService extends NotificationListenerService {
     }
 
     private void init() {
+        // Check if app folder is ready before loading XML files
+        java.io.File folder = Tuils.getFolder();
+        if(folder == null || !folder.exists()) {
+            // Folder not ready yet, skip initialization
+            return;
+        }
+        
         try {
             notificationManager = NotificationManager.create(this);
             XMLPrefsManager.loadCommons(this);
@@ -270,11 +277,17 @@ public class NotificationService extends NotificationListenerService {
         };
 
         manager = getPackageManager();
-        enabled = XMLPrefsManager.getBoolean(Notifications.show_notifications) || XMLPrefsManager.get(Notifications.show_notifications).equalsIgnoreCase("enabled");
+        // Null-safe evaluation of show_notifications preference
+        enabled = XMLPrefsManager.getBoolean(Notifications.show_notifications);
+        if(!enabled) {
+            String rawShow = XMLPrefsManager.get(Notifications.show_notifications);
+            if(rawShow != null && rawShow.equalsIgnoreCase("enabled")) enabled = true;
+        }
 
         pastNotifications = new HashMap<>();
 
         format = XMLPrefsManager.get(Notifications.notification_format);
+        if(format == null || format.length() == 0) format = Notifications.notification_format.defaultValue();
         color = XMLPrefsManager.getColor(Notifications.default_notification_color);
 
         click = XMLPrefsManager.getBoolean(Notifications.click_notification);
@@ -329,8 +342,10 @@ public class NotificationService extends NotificationListenerService {
             notificationManager = null;
         }
 
-        bgThread.interrupt();
-        bgThread = null;
+        if(bgThread != null) {
+            bgThread.interrupt();
+            bgThread = null;
+        }
 
         if(pastNotifications != null) {
             pastNotifications.clear();

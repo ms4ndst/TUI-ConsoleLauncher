@@ -12,7 +12,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -88,7 +88,9 @@ public class ReplyManager implements XMLPrefsElement {
 
         load(true);
 
-        enabled = Boolean.parseBoolean(values.get(Reply.reply_enabled).value);
+        // Add null-safety for missing XML preferences
+        ohi.andre.consolelauncher.managers.xml.classes.XMLPrefsEntry replyEnabledEntry = values.get(Reply.reply_enabled);
+        enabled = replyEnabledEntry != null && Boolean.parseBoolean(replyEnabledEntry.value);
         if(!enabled) {
             notificationWears = null;
             boundApps = null;

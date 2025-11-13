@@ -15,8 +15,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +46,11 @@ public class TuiLocationManager {
     public double latitude, longitude;
 
     private List<String> actionsPool;
+
+    public static TuiLocationManager create(Context context) {
+        if(instance == null) instance = new TuiLocationManager(context);
+        return instance;
+    }
 
     private static TuiLocationManager instance;
     public static TuiLocationManager instance(Context context) {

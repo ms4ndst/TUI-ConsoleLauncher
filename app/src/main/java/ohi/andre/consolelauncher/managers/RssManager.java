@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Handler;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import org.w3c.dom.Document;
@@ -136,6 +136,9 @@ public class RssManager implements XMLPrefsElement {
 
         root = new File(Tuils.getFolder(), RSS_FOLDER);
         rssIndexFile = new File(Tuils.getFolder(), PATH);
+
+        // Copy default RSS file from assets if it doesn't exist
+        Tuils.copyAssetFileIfNeeded(context, PATH, rssIndexFile);
 
         this.client = client;
 
@@ -675,7 +678,7 @@ public class RssManager implements XMLPrefsElement {
                             c = kbPattern.matcher(c).replaceAll(String.valueOf(kb));
                             c = bPattern.matcher(c).replaceAll(String.valueOf(bytes));
 
-                            c = TimeManager.instance.replace(c);
+                            c = TimeManager.instance(context).replace(c);
 
                             Tuils.sendOutput(downloadMessageColor, context, c);
                         }
@@ -830,7 +833,7 @@ public class RssManager implements XMLPrefsElement {
                         }
 
                         long timeLong = d.getTime();
-                        value = TimeManager.instance.replace(timeFormat, timeLong, Integer.MAX_VALUE).toString();
+                        value = TimeManager.instance(context).replace(timeFormat, timeLong, Integer.MAX_VALUE).toString();
                     } else {
                         value = HtmlEscape.unescapeHtml(value);
 

@@ -188,7 +188,7 @@ public class config extends ParamCommand {
                 }
 
                 if(name.equalsIgnoreCase(AppsManager.PATH)) {
-                    List<String> strings = AppsManager.instance.getValues().values();
+                    List<String> strings = new ArrayList<>(AppsManager.instance.getValuesMap().values());
                     Tuils.addPrefix(strings, Tuils.DOUBLE_SPACE);
                     strings.add(0, AppsManager.PATH);
                     return Tuils.toPlanString(strings, Tuils.NEWLINE);

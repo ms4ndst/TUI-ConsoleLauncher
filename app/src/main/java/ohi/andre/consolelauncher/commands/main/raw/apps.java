@@ -65,6 +65,7 @@ public class apps extends ParamCommand {
             @Override
             public String exec(ExecutePack pack) {
                 LaunchInfo i = pack.getLaunchInfo();
+                if (i == null) return pack.context.getString(R.string.output_appnotfound);
                 ((MainPack) pack).appsManager.showActivity(i);
                 return null;
             }
@@ -78,6 +79,7 @@ public class apps extends ParamCommand {
             @Override
             public String exec(ExecutePack pack) {
                 LaunchInfo i = pack.getLaunchInfo();
+                if (i == null) return pack.context.getString(R.string.output_appnotfound);
                 ((MainPack) pack).appsManager.hideActivity(i);
                 return null;
             }
@@ -92,6 +94,7 @@ public class apps extends ParamCommand {
             public String exec(ExecutePack pack) {
                 try {
                     LaunchInfo i = pack.getLaunchInfo();
+                    if (i == null) return pack.context.getString(R.string.output_appnotfound);
 
                     PackageInfo info = pack.context.getPackageManager().getPackageInfo(i.componentName.getPackageName(), PackageManager.GET_PERMISSIONS | PackageManager.GET_ACTIVITIES | PackageManager.GET_SERVICES | PackageManager.GET_RECEIVERS);
                     return AppUtils.format(i, info);
@@ -108,7 +111,9 @@ public class apps extends ParamCommand {
 
             @Override
             public String exec(ExecutePack pack) {
-                openPlaystore(pack.context, pack.getLaunchInfo().componentName.getPackageName());
+                LaunchInfo i = pack.getLaunchInfo();
+                if (i == null) return pack.context.getString(R.string.output_appnotfound);
+                openPlaystore(pack.context, i.componentName.getPackageName());
                 return null;
             }
         },
@@ -158,7 +163,9 @@ public class apps extends ParamCommand {
 
             @Override
             public String exec(ExecutePack pack) {
-                openSettings(pack.context, pack.getLaunchInfo().componentName.getPackageName());
+                LaunchInfo i = pack.getLaunchInfo();
+                if (i == null) return pack.context.getString(R.string.output_appnotfound);
+                openSettings(pack.context, i.componentName.getPackageName());
                 return null;
             }
         },
@@ -170,7 +177,9 @@ public class apps extends ParamCommand {
 
             @Override
             public String exec(ExecutePack pack) {
-                Intent intent = ((MainPack) pack).appsManager.getIntent(pack.getLaunchInfo());
+                LaunchInfo i = pack.getLaunchInfo();
+                if (i == null) return pack.context.getString(R.string.output_appnotfound);
+                Intent intent = ((MainPack) pack).appsManager.getIntent(i);
                 pack.context.startActivity(intent);
 
                 return null;
@@ -186,6 +195,114 @@ public class apps extends ParamCommand {
             public String exec(ExecutePack pack) {
                 pack.context.startActivity(Tuils.openFile(pack.context, new File(Tuils.getFolder(), AppsManager.PATH)));
                 return null;
+            }
+        },
+        export {
+            @Override
+            public int[] args() {
+                return new int[] {CommandAbstraction.PLAIN_TEXT};
+            }
+
+            @Override
+            public String exec(ExecutePack pack) {
+                String filename;
+                try {
+                    filename = pack.getString();
+                    if (filename == null || filename.trim().isEmpty()) {
+                        filename = "installed_apps.txt";
+                    }
+                } catch (Exception e) {
+                    filename = "installed_apps.txt";
+                }
+                
+                return exportAppList(pack, filename);
+            }
+
+            @Override
+            public String onNotArgEnough(ExecutePack pack, int n) {
+                // Use default filename if no argument provided
+                return exportAppList(pack, "installed_apps.txt");
+            }
+            
+            private String exportAppList(ExecutePack pack, String filename) {
+                try {
+                    File outputFile = new File(Tuils.getFolder(), filename);
+                    java.io.FileWriter writer = new java.io.FileWriter(outputFile);
+                    java.io.BufferedWriter bufferedWriter = new java.io.BufferedWriter(writer);
+                    
+                    AppsManager appsManager = ((MainPack) pack).appsManager;
+                    java.util.List<LaunchInfo> apps = appsManager.getAllAppsNow();
+                    
+                    bufferedWriter.write("# Installed Apps List - " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()));
+                    bufferedWriter.newLine();
+                    bufferedWriter.write("# Total apps: " + apps.size());
+                    bufferedWriter.newLine();
+                    bufferedWriter.newLine();
+                    
+                    for (LaunchInfo app : apps) {
+                        bufferedWriter.write(app.publicLabel + " (" + app.componentName.getPackageName() + ")");
+                        bufferedWriter.newLine();
+                    }
+                    
+                    bufferedWriter.close();
+                    writer.close();
+                    
+                    return "App list exported to " + outputFile.getAbsolutePath();
+                } catch (java.io.IOException e) {
+                    return "Error exporting app list: " + e.getMessage();
+                }
+            }
+        },
+        viewexport {
+            @Override
+            public int[] args() {
+                return new int[] {CommandAbstraction.PLAIN_TEXT};
+            }
+
+            @Override
+            public String exec(ExecutePack pack) {
+                String filename;
+                try {
+                    filename = pack.getString();
+                    if (filename == null || filename.trim().isEmpty()) {
+                        filename = "installed_apps.txt";
+                    }
+                } catch (Exception e) {
+                    filename = "installed_apps.txt";
+                }
+                
+                return readExportedFile(pack, filename);
+            }
+
+            @Override
+            public String onNotArgEnough(ExecutePack pack, int n) {
+                return readExportedFile(pack, "installed_apps.txt");
+            }
+            
+            private String readExportedFile(ExecutePack pack, String filename) {
+                try {
+                    File inputFile = new File(Tuils.getFolder(), filename);
+                    
+                    if (!inputFile.exists()) {
+                        return "File not found: " + filename + "\nUse 'apps -export' to create it first.";
+                    }
+                    
+                    java.io.FileReader reader = new java.io.FileReader(inputFile);
+                    java.io.BufferedReader bufferedReader = new java.io.BufferedReader(reader);
+                    
+                    StringBuilder content = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        content.append(line).append(Tuils.NEWLINE);
+                    }
+                    
+                    bufferedReader.close();
+                    reader.close();
+                    
+                    return content.toString();
+                } catch (java.io.IOException e) {
+                    return "Error reading app list: " + e.getMessage();
+                }
             }
         },
 //        services {
@@ -277,6 +394,7 @@ public class apps extends ParamCommand {
             @Override
             public String exec(ExecutePack pack) {
                 LaunchInfo app = pack.getLaunchInfo();
+                if (app == null) return pack.context.getString(R.string.output_appnotfound);
                 app.launchedTimes = 0;
                 ((MainPack) pack).appsManager.writeLaunchTimes(app);
 
@@ -381,14 +499,24 @@ public class apps extends ParamCommand {
         addtogp {
             @Override
             public int[] args() {
-                return new int[] {CommandAbstraction.APP_GROUP, CommandAbstraction.VISIBLE_PACKAGE};
+                return new int[] {CommandAbstraction.APP_GROUP, CommandAbstraction.NO_SPACE_STRING};
             }
 
             @Override
             public String exec(ExecutePack pack) {
-                String name = pack.getString();
-                LaunchInfo app = pack.getLaunchInfo();
-                return ((MainPack) pack).appsManager.addAppToGroup(name, app);
+                String groupName = pack.getString();
+                if (groupName == null) return pack.context.getString(R.string.output_groupnotfound);
+                
+                String appName = pack.getString();
+                if (appName == null) return pack.context.getString(R.string.output_appnotfound);
+                
+                AppsManager appsManager = ((MainPack) pack).appsManager;
+                
+                // Search in ALL apps (third parameter = ALL_APPS constant which is -1)
+                LaunchInfo app = appsManager.findLaunchInfoWithLabel(appName, -1);
+                
+                if (app == null) return pack.context.getString(R.string.output_appnotfound);
+                return appsManager.addAppToGroup(groupName, app);
             }
         },
         rmfromgp {
@@ -400,7 +528,9 @@ public class apps extends ParamCommand {
             @Override
             public String exec(ExecutePack pack) {
                 String name = pack.getString();
+                if (name == null) return pack.context.getString(R.string.output_groupnotfound);
                 LaunchInfo app = pack.getLaunchInfo();
+                if (app == null) return pack.context.getString(R.string.output_appnotfound);
                 return ((MainPack) pack).appsManager.removeAppFromGroup(name, app);
             }
         },

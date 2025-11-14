@@ -483,7 +483,7 @@ public class MainManager {
                 input = null;
             }
 
-            List<? extends Group> appGroups = (List<? extends Group>) (List<?>) info.appsManager.groups;
+            List<? extends Group> appGroups = info.appsManager.groups;
             if(appGroups != null) {
                 for(Group g : appGroups) {
                     if(name.equals(g.name())) {

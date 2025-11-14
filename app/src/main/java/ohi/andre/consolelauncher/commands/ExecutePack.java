@@ -38,30 +38,55 @@ public abstract class ExecutePack {
     }
 
     public String getString() {
-        return (String) get();
+        Object obj = get();
+        if (obj instanceof String) {
+            return (String) obj;
+        }
+        return null;
     }
 
     public int getInt() {
-        return (int) get();
+        Object obj = get();
+        if (obj instanceof Integer) {
+            return (int) obj;
+        }
+        return 0;
     }
 
     public boolean getBoolean() {
-        return (boolean) get();
+        Object obj = get();
+        if (obj instanceof Boolean) {
+            return (boolean) obj;
+        }
+        return false;
     }
 
     public ArrayList getList() {
-        return (ArrayList) get();
+        Object obj = get();
+        if (obj instanceof ArrayList) {
+            return (ArrayList) obj;
+        }
+        return null;
     }
 
     public XMLPrefsSave getPrefsSave() {
-        return (XMLPrefsSave) get();
+        Object obj = get();
+        if (obj instanceof XMLPrefsSave) {
+            return (XMLPrefsSave) obj;
+        }
+        return null;
     }
 
     // FIXED: The reference is now simply LaunchInfo.
     // This tells the Java compiler to look for a static nested class named 'LaunchInfo'
     // inside the 'AppsManager' class, which is exactly how Kotlin compiles it.
     public LaunchInfo getLaunchInfo() {
-        return (LaunchInfo) get();
+        Object obj = get();
+        if (obj instanceof LaunchInfo) {
+            return (LaunchInfo) obj;
+        }
+        // If obj is null or not a LaunchInfo, return null instead of throwing ClassCastException
+        return null;
     }
 
     public void set(Object[] args) {

@@ -17,6 +17,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ohi.andre.consolelauncher.MainManager
 import ohi.andre.consolelauncher.UIManager
 import ohi.andre.consolelauncher.commands.main.MainPack
 import ohi.andre.consolelauncher.managers.xml.XMLPrefsManager
@@ -58,6 +59,36 @@ class AppsManager(private val context: Context) : ohi.andre.consolelauncher.mana
         return allApps.filter { it.componentName.packageName !in hiddenApps }.sortedWith(getComparator(sorting))
     }
     fun getHiddenApps(): List<LaunchInfo> = allApps.filter { it.componentName.packageName in hiddenApps }
+    
+    fun getAllApps(): List<LaunchInfo> {
+        val sorting = XMLPrefsManager.getInt(Apps.app_groups_sorting)
+        return allApps.sortedWith(getComparator(sorting))
+    }
+    
+    // Synchronous method for immediate loading - used by export
+    fun getAllAppsNow(): List<LaunchInfo> {
+        // If allApps is empty, load them synchronously
+        if (allApps.isEmpty()) {
+            val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            val resolveInfoList: List<ResolveInfo> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(0L))
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.queryIntentActivities(intent, 0)
+            }
+            allApps = resolveInfoList.mapNotNull { resolveInfo ->
+                resolveInfo.activityInfo?.let { ai ->
+                    LaunchInfo(
+                        resolveInfo.loadLabel(packageManager).toString(),
+                        ComponentName(ai.packageName, ai.name),
+                        prefs.getInt(ComponentName(ai.packageName, ai.name).flattenToString(), 0)
+                    )
+                }
+            }
+        }
+        val sorting = XMLPrefsManager.getInt(Apps.app_groups_sorting)
+        return allApps.sortedWith(getComparator(sorting))
+    }
 
     // Legacy names
     fun shownApps(): List<LaunchInfo> = getVisibleApps()
@@ -160,11 +191,11 @@ class AppsManager(private val context: Context) : ohi.andre.consolelauncher.mana
         private val appFlats: MutableSet<String>,
         private val bgColorHex: String?,
         private val fgColorHex: String?
-    ) : it.andreuzzi.comparestring2.StringableObject {
-        fun name(): String = groupName
-        fun members(): List<GroupLaunchInfo> = appFlats.mapNotNull { findLaunchInfoByFlatten(it)?.let { li -> GroupLaunchInfo(li.publicLabel, li.componentName, li.launchedTimes) } }
+    ) : MainManager.Group, it.andreuzzi.comparestring2.StringableObject {
+        override fun name(): String = groupName
+        override fun members(): List<GroupLaunchInfo> = appFlats.mapNotNull { findLaunchInfoByFlatten(it)?.let { li -> GroupLaunchInfo(li.publicLabel, li.componentName, li.launchedTimes) } }
         fun contains(info: LaunchInfo): Boolean = appFlats.contains(info.componentName.flattenToString())
-        fun use(mainPack: MainPack, input: String): Boolean {
+        override fun use(mainPack: MainPack, input: String): Boolean {
             val li = members().find { it.publicLabel.equals(input, true) }
             if (li != null) { findLaunchInfoByFlatten(li.componentName.flattenToString())?.let { launch(it) }; return true }
             return false

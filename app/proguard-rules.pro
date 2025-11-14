@@ -1,4 +1,4 @@
--keep public class ohi.andre.consolelauncher.commands.main.raw.* { public *; }
+-keep public class ohi.andre.consolelauncher.commands.main.raw.* { *; }
 -keep public abstract class ohi.andre.consolelauncher.commands.main.generals.* { public *; }
 -keep public class ohi.andre.consolelauncher.commands.tuixt.raw.* { public *; }
 -keep public class ohi.andre.consolelauncher.managers.notifications.NotificationService
@@ -10,7 +10,15 @@
 
 # Keep LaunchInfo and all its subclasses (including inner classes)
 -keep class ohi.andre.consolelauncher.managers.LaunchInfo { *; }
+-keep class ohi.andre.consolelauncher.managers.AppsManager { *; }
 -keep class ohi.andre.consolelauncher.managers.AppsManager$** { *; }
+
+# Keep ALL command execution classes - NO obfuscation allowed
+-keep class ohi.andre.consolelauncher.commands.** { *; }
+-keep class ohi.andre.consolelauncher.commands.main.MainPack { *; }
+-keep class ohi.andre.consolelauncher.commands.ExecutePack { *; }
+-keep class ohi.andre.consolelauncher.commands.CommandTuils { *; }
+-keep class ohi.andre.consolelauncher.commands.CommandTuils$** { *; }
 
 -dontwarn ohi.andre.consolelauncher.commands.main.raw.**
 
@@ -20,7 +28,6 @@
 
 -dontwarn okhttp3.**
 -dontwarn okio.**
--dontwarn javax.annotation.**
 -keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
 
 -dontwarn org.htmlcleaner.**

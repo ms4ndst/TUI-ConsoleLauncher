@@ -33,6 +33,11 @@ android {
         versionCode 206
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            debuggable true
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled true

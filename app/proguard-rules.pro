@@ -8,6 +8,10 @@
 -keep class ohi.andre.consolelauncher.managers.suggestions.HideSuggestionViewValues
 -keep public class it.andreuzzi.comparestring2.**
 
+# Keep LaunchInfo and all its subclasses (including inner classes)
+-keep class ohi.andre.consolelauncher.managers.LaunchInfo { *; }
+-keep class ohi.andre.consolelauncher.managers.AppsManager$** { *; }
+
 -dontwarn ohi.andre.consolelauncher.commands.main.raw.**
 
 -dontwarn javax.annotation.**

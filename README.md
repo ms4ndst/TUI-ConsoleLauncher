@@ -101,16 +101,9 @@ Then update `keystore.properties` with your credentials. **Never commit producti
 - **[Gadget Hacks](https://android.gadgethacks.com/how-to/linux-style-launcher-turns-your-home-screen-into-command-prompt-0177326/)**
 
 ## Contributing
-**Please obeserve** this is an unofficial version of the origial project<br>
+**Please obeserve** this is an unofficial version of the origial project<p>
 **Pull requests** are welcome. But **before** you decide to make a major change you should contact the original creator (**[e-mail](mailto:andreuzzi.francesco@gmail.com)**) in order to check if they going to include your change in t-ui, so you don't waste your time.
 
-## How to format a bug report
-1. Set "**Bug report**" as subject
-2. Describe the issue, when it happens, how to reproduce it
-3. **English**! (or Italian, at least)
-4. Include any **screenshot** that you think could help (*outputs*, *UI*, etc..)
-5. Include any **file** that you think could help (*behavior.xml*, *ui.xml*, etc..)
-6. Send it to **andreuzzi.francesco@gmail.com**
 
 ## Open source libraries
 * [**CompareString2**](https://github.com/fAndreuzzi/CompareString2)

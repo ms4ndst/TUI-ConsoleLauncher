@@ -14,6 +14,21 @@
 - Scoped storage support
 - Modern security and permission handling
 
+## Recent Updates (December 2025)
+
+### Network & Weather Improvements
+- **Wi-Fi Status Display**: Fixed Wi-Fi detection using NetworkCapabilities API with legacy fallback for older devices. Now correctly shows connected Wi-Fi SSID instead of "no internet connection"
+- **Weather Command (`tuiweather`)**: Enhanced weather output format
+  - Now displays: `[Location]: [Condition] [Temperature]°C`
+  - Example: `Stockholm: Clear 5.99°C`
+  - Switched to HTTPS for OpenWeatherMap API calls (Android cleartext policy compliance)
+  - Improved internet connectivity checks with fail-open logic
+- **Format Migration**: Existing installations automatically migrate to new weather display format
+
+### Build System
+- Custom build directory (`.build`) to avoid OneDrive sync conflicts
+- Updated ProGuard rules for R8 compatibility with explicit constructor patterns
+
 ## Build Instructions
 
 ### Prerequisites

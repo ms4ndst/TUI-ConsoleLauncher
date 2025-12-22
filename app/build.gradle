@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.kotlin.parcelize)
 }
 
+// Move module build output outside OneDrive to avoid file lock issues
+buildDir = "${rootProject.projectDir}/.build/app"
+
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {

@@ -1,0 +1,252 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-debug",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installDebug"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-release",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleRelease"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-release",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installRelease"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build-release",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"assembleRelease"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-release",
+			"type": "shell",
+			"command": ".\\gradlew.bat",
+			"args": [
+				"installRelease"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"group": "build"
+		}
+	]
+}

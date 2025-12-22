@@ -1161,10 +1161,22 @@ public class Tuils {
 
     public static boolean hasInternetAccess() {
         try {
-            HttpURLConnection urlc = (HttpURLConnection) (new URL("http://clients3.google.com/generate_204").openConnection());
-            return (urlc.getResponseCode() == 204 && urlc.getContentLength() == 0);
+            HttpURLConnection urlc = (HttpURLConnection) (new URL("https://clients3.google.com/generate_204").openConnection());
+            urlc.setConnectTimeout(2000);
+            urlc.setReadTimeout(2000);
+            urlc.setInstanceFollowRedirects(false);
+            urlc.setUseCaches(false);
+            urlc.setRequestProperty("User-Agent", "TUI-ConsoleLauncher");
+            urlc.setRequestProperty("Connection", "close");
+
+            int responseCode = urlc.getResponseCode();
+            int contentLength = urlc.getContentLength();
+
+            return (responseCode == 204 && contentLength == 0) || responseCode == 200;
         } catch (IOException e) {
-            return false;
+            // Fail open: if the reachability probe fails, allow the app to try the actual request
+            // so we do not incorrectly block on networks that filter the probe URL.
+            return true;
         }
     }
 

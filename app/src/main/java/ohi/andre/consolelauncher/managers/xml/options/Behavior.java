@@ -1032,7 +1032,7 @@ public enum Behavior implements XMLPrefsSave {
     weather_format {
         @Override
         public String defaultValue() {
-            return "Weather: %main, Temp: %temp";
+            return "%name: %main %temp°C";
         }
 
         @Override

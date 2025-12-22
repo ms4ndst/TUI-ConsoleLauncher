@@ -16,6 +16,9 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
@@ -527,9 +530,27 @@ public class UIManager implements OnTouchListener {
             }
 
 //            wifi
-            boolean wifiOn = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected();
+            boolean wifiOn = false;
             String wifiName = null;
-            if (wifiOn) {
+
+            if (connectivityManager != null) {
+                NetworkCapabilities capabilities = null;
+                Network activeNetwork = connectivityManager.getActiveNetwork();
+                if (activeNetwork != null) {
+                    capabilities = connectivityManager.getNetworkCapabilities(activeNetwork);
+                }
+
+                if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                    wifiOn = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                            || capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                            || capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
+                } else {
+                    NetworkInfo wifiInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                    wifiOn = wifiInfo != null && wifiInfo.isConnected();
+                }
+            }
+
+            if (wifiOn && wifiManager != null) {
                 WifiInfo connectionInfo = wifiManager.getConnectionInfo();
                 if (connectionInfo != null) {
                     wifiName = connectionInfo.getSSID();
@@ -658,6 +679,18 @@ public class UIManager implements OnTouchListener {
             }
             weatherDelay *= 1000;
 
+            // Force update to new weather format with location, condition, and temperature
+            try {
+                String currentFormat = XMLPrefsManager.get(Behavior.weather_format);
+                // Update if format is old (contains "Weather:" or "Temp:") or missing %name
+                if(currentFormat == null || currentFormat.trim().length() == 0 || 
+                   !currentFormat.contains("%name") || 
+                   currentFormat.contains("Weather:") || 
+                   currentFormat.contains("Temp:")) {
+                    Behavior.weather_format.parent().write(Behavior.weather_format, "%name: %main %temp°C");
+                }
+            } catch (Exception ignored) {}
+
             String where = XMLPrefsManager.get(Behavior.weather_location);
             if(where == null || where.length() == 0 || (!Tuils.isNumber(where) && !where.contains(","))) {
 //                Tuils.location(mContext, new Tuils.ArgsRunnable() {
@@ -724,11 +757,11 @@ public class UIManager implements OnTouchListener {
         }
 
         private void setUrl(String where) {
-            url = "http://api.openweathermap.org/data/2.5/weather?" + where + "&appid=" + key + "&units=" + XMLPrefsManager.get(Behavior.weather_temperature_measure);
+            url = "https://api.openweathermap.org/data/2.5/weather?" + where + "&appid=" + key + "&units=" + XMLPrefsManager.get(Behavior.weather_temperature_measure);
         }
 
         private void setUrl(double latitude, double longitude) {
-            url = "http://api.openweathermap.org/data/2.5/weather?" + "lat=" + latitude + "&lon=" + longitude + "&appid=" + key + "&units=" + XMLPrefsManager.get(Behavior.weather_temperature_measure);
+            url = "https://api.openweathermap.org/data/2.5/weather?" + "lat=" + latitude + "&lon=" + longitude + "&appid=" + key + "&units=" + XMLPrefsManager.get(Behavior.weather_temperature_measure);
         }
     }
 
@@ -838,8 +871,8 @@ public class UIManager implements OnTouchListener {
                     updateText(Label.weather, s);
 
                     if(showWeatherUpdate) {
-                        String message = context.getString(R.string.weather_updated) + Tuils.SPACE + c.get(Calendar.HOUR_OF_DAY) + "." + c.get(Calendar.MINUTE) + Tuils.SPACE + "(" + lastLatitude + ", " + lastLongitude + ")";
-                        Tuils.sendOutput(context, message, TerminalManager.CATEGORY_OUTPUT);
+                        // Output only the formatted weather line (location + condition + temperature)
+                        Tuils.sendOutput(context, s.toString(), TerminalManager.CATEGORY_OUTPUT);
                     }
                 } else if(action.equals(ACTION_WEATHER_GOT_LOCATION)) {
 //                    int result = intent.getIntExtra(XMLPrefsManager.VALUE_ATTRIBUTE, 0);

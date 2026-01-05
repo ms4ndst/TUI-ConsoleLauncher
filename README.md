@@ -5,7 +5,6 @@
     alt="Get it on F-Droid"
     height="60">
 </a>
-## Screenhsot
 
 ## Current Version
 - **v6.18** (`versionCode` **208**)

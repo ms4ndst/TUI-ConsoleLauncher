@@ -1,0 +1,27 @@
+ohi.andre.consolelauncher.app-core-runtime-2.2.0-0 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\0c5797988917321aeb898c237b1120b3\transformed\core-runtime-2.2.0\res
+ohi.andre.consolelauncher.app-core-1.13.0-1 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\2763deb438c00be2755914ab23f76194\transformed\core-1.13.0\res
+ohi.andre.consolelauncher.app-jetified-activity-1.7.0-2 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\516fc222ac94f0bedb5ac1c9cb38474c\transformed\jetified-activity-1.7.0\res
+ohi.andre.consolelauncher.app-jetified-startup-runtime-1.1.1-3 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\5bf9932d9d4a16700f5fd6f5237a2330\transformed\jetified-startup-runtime-1.1.1\res
+ohi.andre.consolelauncher.app-jetified-profileinstaller-1.3.1-4 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\5c778870729b18e655a80eae3a312a89\transformed\jetified-profileinstaller-1.3.1\res
+ohi.andre.consolelauncher.app-jetified-lifecycle-viewmodel-savedstate-2.6.2-5 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\69514bf76d8be48d41d6042ea2d659e1\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.2\res
+ohi.andre.consolelauncher.app-jetified-appcompat-resources-1.7.0-6 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\6fbc9418ec2839dbdf9b2bd94e927f98\transformed\jetified-appcompat-resources-1.7.0\res
+ohi.andre.consolelauncher.app-lifecycle-viewmodel-2.6.2-7 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\71d08880b559dcc2738063514d60b736\transformed\lifecycle-viewmodel-2.6.2\res
+ohi.andre.consolelauncher.app-lifecycle-runtime-2.6.2-8 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\80335f3eb9bdd51b196896c206e33789\transformed\lifecycle-runtime-2.6.2\res
+ohi.andre.consolelauncher.app-localbroadcastmanager-1.1.0-9 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\8048e559cc7f75d5b77b395b1022aa5c\transformed\localbroadcastmanager-1.1.0\res
+ohi.andre.consolelauncher.app-jetified-annotation-experimental-1.4.0-10 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\8b24f8ad47f959113f0c94748ec96753\transformed\jetified-annotation-experimental-1.4.0\res
+ohi.andre.consolelauncher.app-jetified-emoji2-1.3.0-11 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\8dc6954a03904651b67b641f0b91eb90\transformed\jetified-emoji2-1.3.0\res
+ohi.andre.consolelauncher.app-lifecycle-livedata-core-2.6.2-12 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\a14d024d7dfdc8502ed218857ab34822\transformed\lifecycle-livedata-core-2.6.2\res
+ohi.andre.consolelauncher.app-lifecycle-livedata-2.6.2-13 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\a61a8694747df181eac9f236b0c500ad\transformed\lifecycle-livedata-2.6.2\res
+ohi.andre.consolelauncher.app-jetified-core-ktx-1.13.0-14 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\ab6facdb6a18ffabd591546e3ba0d53f\transformed\jetified-core-ktx-1.13.0\res
+ohi.andre.consolelauncher.app-fragment-1.5.4-15 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\b040e91ba412d66223c7d6e0954fd124\transformed\fragment-1.5.4\res
+ohi.andre.consolelauncher.app-appcompat-1.7.0-16 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\b3a7098573826bc178cfb000eed0a5aa\transformed\appcompat-1.7.0\res
+ohi.andre.consolelauncher.app-jetified-emoji2-views-helper-1.3.0-17 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\be06e5ec865ad7411b1116e32721ff66\transformed\jetified-emoji2-views-helper-1.3.0\res
+ohi.andre.consolelauncher.app-jetified-savedstate-1.2.1-18 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\d47e44a7dca737f780f1aa8fe8ad5eea\transformed\jetified-savedstate-1.2.1\res
+ohi.andre.consolelauncher.app-jetified-lifecycle-process-2.6.2-19 C:\Users\magnus.sandstrom\.gradle\caches\8.10.2\transforms\e8933ada661d63bdaeee530a1b4f80d9\transformed\jetified-lifecycle-process-2.6.2\res
+ohi.andre.consolelauncher.app-pngs-20 C:\Users\magnus.sandstrom\OneDrive - Visma Group - Internal IT\Code\Repo\TUI-ConsoleLauncher\.build\app\generated\res\pngs\debug
+ohi.andre.consolelauncher.app-resValues-21 C:\Users\magnus.sandstrom\OneDrive - Visma Group - Internal IT\Code\Repo\TUI-ConsoleLauncher\.build\app\generated\res\resValues\debug
+ohi.andre.consolelauncher.app-packageDebugResources-22 C:\Users\magnus.sandstrom\OneDrive - Visma Group - Internal IT\Code\Repo\TUI-ConsoleLauncher\.build\app\intermediates\incremental\debug\packageDebugResources\merged.dir
+ohi.andre.consolelauncher.app-packageDebugResources-23 C:\Users\magnus.sandstrom\OneDrive - Visma Group - Internal IT\Code\Repo\TUI-ConsoleLauncher\.build\app\intermediates\incremental\debug\packageDebugResources\stripped.dir
+ohi.andre.consolelauncher.app-debug-24 C:\Users\magnus.sandstrom\OneDrive - Visma Group - Internal IT\Code\Repo\TUI-ConsoleLauncher\.build\app\intermediates\merged_res\debug\mergeDebugResources
+ohi.andre.consolelauncher.app-debug-25 C:\Users\magnus.sandstrom\OneDrive - Visma Group - Internal IT\Code\Repo\TUI-ConsoleLauncher\app\src\debug\res
+ohi.andre.consolelauncher.app-main-26 C:\Users\magnus.sandstrom\OneDrive - Visma Group - Internal IT\Code\Repo\TUI-ConsoleLauncher\app\src\main\res

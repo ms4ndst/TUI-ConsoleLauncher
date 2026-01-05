@@ -3,12 +3,15 @@ package ohi.andre.consolelauncher.commands.main.raw;
 import android.content.Intent;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import java.util.Arrays;
+
 import ohi.andre.consolelauncher.R;
 import ohi.andre.consolelauncher.commands.CommandAbstraction;
 import ohi.andre.consolelauncher.commands.ExecutePack;
 import ohi.andre.consolelauncher.commands.main.MainPack;
 import ohi.andre.consolelauncher.commands.main.specific.ParamCommand;
 import ohi.andre.consolelauncher.managers.ThemeManager;
+import ohi.andre.consolelauncher.managers.ThemePalette;
 import ohi.andre.consolelauncher.tuils.Tuils;
 
 /**
@@ -27,8 +30,26 @@ public class theme extends ParamCommand {
 
             @Override
             public String exec(ExecutePack pack) {
+                String selection = pack.getString();
+                if (selection == null) return null;
+
+                selection = selection.trim();
+                if (selection.length() == 0) return null;
+
+                // If the user passes a number, treat it as a selection from the local palette (1-based)
+                if (Tuils.isNumber(selection)) {
+                    int oneBased = Integer.parseInt(selection);
+                    int index = oneBased - 1;
+
+                    Intent intent = new Intent(ThemeManager.ACTION_APPLY_LOCAL);
+                    intent.putExtra(ThemeManager.INDEX, index);
+                    LocalBroadcastManager.getInstance(pack.context.getApplicationContext()).sendBroadcast(intent);
+                    return null;
+                }
+
+                // Otherwise fall back to the legacy behavior (apply online theme by id/name)
                 Intent intent = new Intent(ThemeManager.ACTION_APPLY);
-                intent.putExtra(ThemeManager.NAME, pack.getString());
+                intent.putExtra(ThemeManager.NAME, selection);
                 LocalBroadcastManager.getInstance(pack.context.getApplicationContext()).sendBroadcast(intent);
                 return null;
             }
@@ -48,8 +69,25 @@ public class theme extends ParamCommand {
         view {
             @Override
             public String exec(ExecutePack pack) {
-                pack.context.startActivity(Tuils.webPage("https://tui.tarunshankerpandey.com"));
-                return null;
+                // List built-in color schemes by name, alphabetically, and number them (1-based)
+                String[] names = ThemePalette.getSchemeNames();
+                String[] numbered = new String[names.length];
+                for (int i = 0; i < names.length; i++) {
+                    numbered[i] = (i + 1) + ") " + names[i];
+                }
+                return Tuils.toPlanString(numbered, Tuils.NEWLINE);
+            }
+        },
+        viewe {
+            @Override
+            public String exec(ExecutePack pack) {
+                // Alias for -view: keep for backwards compatibility
+                String[] names = ThemePalette.getSchemeNames();
+                String[] numbered = new String[names.length];
+                for (int i = 0; i < names.length; i++) {
+                    numbered[i] = (i + 1) + ") " + names[i];
+                }
+                return Tuils.toPlanString(numbered, Tuils.NEWLINE);
             }
         },
         create {

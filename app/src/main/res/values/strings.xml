@@ -96,7 +96,7 @@
         <item>Launch your apps typing their name</item>
         <item>You can call your contacts with the cmd \"call contactName\"</item>
         <item>t-ui is highly customizable. Check \"config -ls\" or use the cmd \"config -tutorial\" to see what you can change</item>
-        <item>You can choose within a large database of themes uploaded by t-ui users. Check the cmd \"theme -view\"</item>
+        <item>You can list built-in themes with \"theme -view\" and apply one with \"theme -apply [number]\"</item>
         <item>Join our community! Google+, Twitter, Telegram and GitHub. Use the cmd \"tui\"</item>
     </string-array>
 
@@ -327,10 +327,12 @@
         \n-use [shortcutID OR shortcut index] [optional: appName] -> use the specified shortcut
         \n-cp [index] [appName] -> copy to clipboard the nth shortcut of the selected app (first: 0)</string>
     <string name="help_status">Get info about battery charge, wifi status and mobile data</string>
-    <string name="help_theme">-apply [name] -> apply the selected theme (case sensitive). require internet connection. may take some seconds
+    <string name="help_theme">-view -> list built-in themes (numbered)
+        \n-viewe -> alias for -view
+        \n-apply [number] -> apply the nth built-in theme (reloads UI)
+        \n-apply [theme_id] -> apply an online theme by id/name (requires internet; may take some seconds)
         \n-old -> re-apply the theme that was replaced by the current one
         \n-standard -> apply the standard theme
-        \n-view -> view the available themes
         \n-create -> create a new theme</string>
     <string name="help_time">Print the current time with the given format
         \n\nUsage:

@@ -28,8 +28,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.core.view.GestureDetectorCompat;
 import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
@@ -382,14 +384,21 @@ public class UIManager implements OnTouchListener {
         List<Pattern> ramPatterns;
         String ramFormat;
 
-        int color;
+        int baseColor;
+        int androidVersionColor;
+        int buildNumberColor;
 
         @Override
         public void run() {
             if(ramFormat == null) {
                 ramFormat = XMLPrefsManager.get(Behavior.ram_format);
 
-                color = XMLPrefsManager.getColor(Theme.ram_color);
+                // Keep RAM line color as before
+                baseColor = XMLPrefsManager.getColor(Theme.ram_color);
+
+                // Color the Android version line yellow and the build number pink
+                androidVersionColor = XMLPrefsManager.getColor(Theme.unlock_counter_color);
+                buildNumberColor = XMLPrefsManager.getColor(Theme.notes_locked_color);
             }
 
             if(ramPatterns == null) {
@@ -431,7 +440,44 @@ public class UIManager implements OnTouchListener {
 
             copy = ramPatterns.get(11).matcher(copy).replaceAll(Matcher.quoteReplacement(Tuils.NEWLINE));
 
-            updateText(Label.ram, Tuils.span(mContext, copy, color, labelSizes[Label.ram.ordinal()]));
+            // Add Android version + build number info under the RAM line
+            String release = Build.VERSION.RELEASE;
+            if (release == null || release.length() == 0) release = "unknown";
+            String build = Build.DISPLAY;
+            if (build == null || build.length() == 0) build = "unknown";
+
+            String base = copy;
+            String androidText = "Android: " + release + " (API " + Build.VERSION.SDK_INT + ")";
+            String buildLabel = "Build: ";
+
+            String full = base;
+            if (!full.endsWith(Tuils.NEWLINE) && full.length() > 0) {
+                full = full + Tuils.NEWLINE;
+            }
+
+            int androidStart = full.length();
+            full = full + androidText;
+            int androidEnd = full.length();
+
+            // Put build on its own row so it fits nicely
+            full = full + Tuils.NEWLINE;
+            int buildLabelStart = full.length();
+            full = full + buildLabel;
+            int buildValueStart = full.length();
+            full = full + build;
+            int buildValueEnd = full.length();
+
+            // Apply size across the whole text, then color sub-sections
+            SpannableString styled = Tuils.span(mContext, Integer.MAX_VALUE, Integer.MAX_VALUE, full, labelSizes[Label.ram.ordinal()]);
+            styled.setSpan(new ForegroundColorSpan(baseColor), 0, androidStart, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // Android line (yellow)
+            styled.setSpan(new ForegroundColorSpan(androidVersionColor), androidStart, androidEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // Build label + build value (both pink)
+            styled.setSpan(new ForegroundColorSpan(buildNumberColor), buildLabelStart, buildValueEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            updateText(Label.ram, styled);
 
             handler.postDelayed(this, RAM_DELAY);
         }
@@ -1274,7 +1320,8 @@ public class UIManager implements OnTouchListener {
         if(show[Label.unlock.ordinal()]) {
             unlockTimes = preferences.getInt(UNLOCK_KEY, 0);
 
-            unlockColor = XMLPrefsManager.getColor(Theme.unlock_counter_color);
+            // Match unlock info color to the internal storage label color
+            unlockColor = XMLPrefsManager.getColor(Theme.storage_color);
             unlockFormat = XMLPrefsManager.get(Behavior.unlock_counter_format);
             notAvailableText = XMLPrefsManager.get(Behavior.not_available_text);
             unlockTimeDivider = XMLPrefsManager.get(Behavior.unlock_time_divider);
@@ -1762,8 +1809,12 @@ public class UIManager implements OnTouchListener {
                 cs = TextUtils.concat(cs, t);
 
                 CharSequence time;
-                if(lastUnlocks[c] > 0) time = TimeManager.instance.getCharSequence(timeGroup, lastUnlocks[c]);
-                else time = notAvailableText;
+                if(lastUnlocks[c] > 0) {
+                    // Force the unlock time lines to use the same color as the rest of the unlock section
+                    time = TimeManager.instance.getCharSequence(timeGroup, lastUnlocks[c], unlockColor);
+                } else {
+                    time = Tuils.span(mContext, notAvailableText, unlockColor, labelSizes[Label.unlock.ordinal()]);
+                }
 
                 if(time == null) continue;
 

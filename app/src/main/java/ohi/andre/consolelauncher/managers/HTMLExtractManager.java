@@ -416,23 +416,59 @@ public class HTMLExtractManager {
                         CharSequence o = Tuils.span(weatherFormat, weatherColor);
 
                         if(url.contains("smhi.se")) {
-                            // Parse SMHI forecast JSON: first timeSeries or approvedData entry
+                            // Parse SMHI JSON: find the entry closest to current time
                             String conditionText = null;
                             Double tempC = null;
                             try {
-                                // Try meteogram format first (timeSeries), then pmp2g format (approvedData)
+                                // Find the timeSeries entry closest to current time
                                 Object tObj = null;
                                 Object sObj = null;
+                                
                                 try {
-                                    tObj = JsonPath.read(json, "$.timeSeries[0].parameters[?(@.name=='t')].values[0]");
-                                    sObj = JsonPath.read(json, "$.timeSeries[0].parameters[?(@.name=='Wsymb2')].values[0]");
+                                    // Get current time in milliseconds
+                                    long currentTimeMs = System.currentTimeMillis();
+                                    
+                                    // Read all timeSeries entries
+                                    List<Object> timeSeries = JsonPath.read(json, "$.timeSeries[*]");
+                                    
+                                    if(timeSeries != null && !timeSeries.isEmpty()) {
+                                        // Find the entry with validTime closest to current time (but not in the future)
+                                        int closestIndex = 0;
+                                        long smallestDiff = Long.MAX_VALUE;
+                                        
+                                        for(int i = 0; i < timeSeries.size(); i++) {
+                                            try {
+                                                String validTimeStr = JsonPath.read(json, "$.timeSeries[" + i + "].validTime");
+                                                if(validTimeStr != null) {
+                                                    // Parse ISO 8601 timestamp (e.g., "2026-01-13T12:00:00Z")
+                                                    long validTimeMs = java.time.Instant.parse(validTimeStr).toEpochMilli();
+                                                    long diff = Math.abs(currentTimeMs - validTimeMs);
+                                                    
+                                                    // Prefer current or past times, but accept near-future if it's closest
+                                                    if(diff < smallestDiff) {
+                                                        smallestDiff = diff;
+                                                        closestIndex = i;
+                                                    }
+                                                }
+                                            } catch (Exception ignored) {}
+                                        }
+                                        
+                                        // Get data from the closest entry
+                                        tObj = JsonPath.read(json, "$.timeSeries[" + closestIndex + "].parameters[?(@.name=='t')].values[0]");
+                                        sObj = JsonPath.read(json, "$.timeSeries[" + closestIndex + "].parameters[?(@.name=='Wsymb2')].values[0]");
+                                    }
                                 } catch (Exception e1) {
-                                    // Fall back to pmp2g format
+                                    // Fall back to first entry or pmp2g format
                                     try {
-                                        tObj = JsonPath.read(json, "$.approvedData[0].parameters[?(@.name=='t')].values[0]");
-                                        sObj = JsonPath.read(json, "$.approvedData[0].parameters[?(@.name=='Wsymb2')].values[0]");
+                                        tObj = JsonPath.read(json, "$.timeSeries[0].parameters[?(@.name=='t')].values[0]");
+                                        sObj = JsonPath.read(json, "$.timeSeries[0].parameters[?(@.name=='Wsymb2')].values[0]");
                                     } catch (Exception e2) {
-                                        Tuils.log(e2);
+                                        try {
+                                            tObj = JsonPath.read(json, "$.approvedData[0].parameters[?(@.name=='t')].values[0]");
+                                            sObj = JsonPath.read(json, "$.approvedData[0].parameters[?(@.name=='Wsymb2')].values[0]");
+                                        } catch (Exception e3) {
+                                            Tuils.log(e3);
+                                        }
                                     }
                                 }
                                 

@@ -210,17 +210,40 @@ public class Tuils {
             List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
-                // Try to get city/locality name first
+                
+                // Priority order for specific location:
+                // 1. Locality (city/town) - most specific
                 String city = address.getLocality();
                 if (city != null && city.length() > 0) {
                     return city;
                 }
-                // Fallback to sub-admin area (like county/region)
+                
+                // 2. SubLocality (neighborhood/district)
+                String subLocality = address.getSubLocality();
+                if (subLocality != null && subLocality.length() > 0) {
+                    return subLocality;
+                }
+                
+                // 3. FeatureName (specific landmark/place)
+                String featureName = address.getFeatureName();
+                if (featureName != null && featureName.length() > 0 && !featureName.matches("\\d+")) {
+                    // Skip if it's just a street number
+                    return featureName;
+                }
+                
+                // 4. Thoroughfare (street name) - still more specific than region
+                String street = address.getThoroughfare();
+                if (street != null && street.length() > 0) {
+                    return street;
+                }
+                
+                // 5. SubAdminArea (county) - only as last resort before admin area
                 String subAdmin = address.getSubAdminArea();
                 if (subAdmin != null && subAdmin.length() > 0) {
                     return subAdmin;
                 }
-                // Fallback to admin area (like state/province)
+                
+                // 6. AdminArea (state/province/region)
                 String admin = address.getAdminArea();
                 if (admin != null && admin.length() > 0) {
                     return admin;

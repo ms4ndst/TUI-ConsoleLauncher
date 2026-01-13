@@ -82,6 +82,21 @@ public class tuiweather extends ParamCommand {
                 LocalBroadcastManager.getInstance(pack.context.getApplicationContext()).sendBroadcast(new Intent(UIManager.ACTION_WEATHER_MANUAL_UPDATE));
                 return null;
             }
+        },
+        location {
+            @Override
+            public int[] args() {
+                return new int[] {CommandAbstraction.PLAIN_TEXT};
+            }
+
+            @Override
+            public String exec(ExecutePack pack) {
+                String location = pack.getString();
+                Behavior.weather_location.parent().write(Behavior.weather_location, location);
+                ((Reloadable) pack.context).addMessage(Behavior.weather_location.parent().path(), "weather_location -> " + location);
+                ((Reloadable) pack.context).reload();
+                return null;
+            }
         };
 
         static Param get(String p) {

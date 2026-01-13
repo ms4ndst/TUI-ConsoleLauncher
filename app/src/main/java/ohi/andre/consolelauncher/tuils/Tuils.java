@@ -202,13 +202,34 @@ public class Tuils {
 
     public static String locationName(Context context, double lat, double lng) {
         Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-        List<Address> addresses = null;
-        try {
-            addresses = geocoder.getFromLocation(lat, lng, 1);
-            return addresses.get(0).getAddressLine(2);
-        } catch (Exception e) {
+        if (!Geocoder.isPresent()) {
             return null;
         }
+        
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                // Try to get city/locality name first
+                String city = address.getLocality();
+                if (city != null && city.length() > 0) {
+                    return city;
+                }
+                // Fallback to sub-admin area (like county/region)
+                String subAdmin = address.getSubAdminArea();
+                if (subAdmin != null && subAdmin.length() > 0) {
+                    return subAdmin;
+                }
+                // Fallback to admin area (like state/province)
+                String admin = address.getAdminArea();
+                if (admin != null && admin.length() > 0) {
+                    return admin;
+                }
+            }
+        } catch (Exception e) {
+            log(e);
+        }
+        return null;
     }
 
     public static boolean notificationServiceIsRunning(Context context) {

@@ -28,10 +28,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.core.view.GestureDetectorCompat;
 import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
@@ -384,21 +382,14 @@ public class UIManager implements OnTouchListener {
         List<Pattern> ramPatterns;
         String ramFormat;
 
-        int baseColor;
-        int androidVersionColor;
-        int buildNumberColor;
+        int color;
 
         @Override
         public void run() {
             if(ramFormat == null) {
                 ramFormat = XMLPrefsManager.get(Behavior.ram_format);
 
-                // Keep RAM line color as before
-                baseColor = XMLPrefsManager.getColor(Theme.ram_color);
-
-                // Color the Android version line yellow and the build number pink
-                androidVersionColor = XMLPrefsManager.getColor(Theme.unlock_counter_color);
-                buildNumberColor = XMLPrefsManager.getColor(Theme.notes_locked_color);
+                color = XMLPrefsManager.getColor(Theme.ram_color);
             }
 
             if(ramPatterns == null) {
@@ -440,44 +431,7 @@ public class UIManager implements OnTouchListener {
 
             copy = ramPatterns.get(11).matcher(copy).replaceAll(Matcher.quoteReplacement(Tuils.NEWLINE));
 
-            // Add Android version + build number info under the RAM line
-            String release = Build.VERSION.RELEASE;
-            if (release == null || release.length() == 0) release = "unknown";
-            String build = Build.DISPLAY;
-            if (build == null || build.length() == 0) build = "unknown";
-
-            String base = copy;
-            String androidText = "Android: " + release + " (API " + Build.VERSION.SDK_INT + ")";
-            String buildLabel = "Build: ";
-
-            String full = base;
-            if (!full.endsWith(Tuils.NEWLINE) && full.length() > 0) {
-                full = full + Tuils.NEWLINE;
-            }
-
-            int androidStart = full.length();
-            full = full + androidText;
-            int androidEnd = full.length();
-
-            // Put build on its own row so it fits nicely
-            full = full + Tuils.NEWLINE;
-            int buildLabelStart = full.length();
-            full = full + buildLabel;
-            int buildValueStart = full.length();
-            full = full + build;
-            int buildValueEnd = full.length();
-
-            // Apply size across the whole text, then color sub-sections
-            SpannableString styled = Tuils.span(mContext, Integer.MAX_VALUE, Integer.MAX_VALUE, full, labelSizes[Label.ram.ordinal()]);
-            styled.setSpan(new ForegroundColorSpan(baseColor), 0, androidStart, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            // Android line (yellow)
-            styled.setSpan(new ForegroundColorSpan(androidVersionColor), androidStart, androidEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            // Build label + build value (both pink)
-            styled.setSpan(new ForegroundColorSpan(buildNumberColor), buildLabelStart, buildValueEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            updateText(Label.ram, styled);
+            updateText(Label.ram, Tuils.span(mContext, copy, color, labelSizes[Label.ram.ordinal()]));
 
             handler.postDelayed(this, RAM_DELAY);
         }
@@ -715,17 +669,19 @@ public class UIManager implements OnTouchListener {
 
         public WeatherRunnable() {
 
-            // Use configured update time regardless of API key (SMHI doesn't require keys)
-            weatherDelay = XMLPrefsManager.getInt(Behavior.weather_update_time) * 1000;
+            // SMHI uses a fixed update interval
+            weatherDelay = XMLPrefsManager.getInt(Behavior.weather_update_time);
+            weatherDelay *= 1000;
 
-            // Ensure a sensible default weather format that doesn't rely on provider-specific fields
+            // Force update to new weather format with location, condition, and temperature
             try {
                 String currentFormat = XMLPrefsManager.get(Behavior.weather_format);
-                // Update if format is empty or clearly old
-                if(currentFormat == null || currentFormat.trim().length() == 0 ||
-                   currentFormat.contains("Weather:") ||
+                // Update if format is old (contains "Weather:" or "Temp:") or missing %name
+                if(currentFormat == null || currentFormat.trim().length() == 0 || 
+                   !currentFormat.contains("%name") || 
+                   currentFormat.contains("Weather:") || 
                    currentFormat.contains("Temp:")) {
-                    Behavior.weather_format.parent().write(Behavior.weather_format, "%main %temp°C");
+                    Behavior.weather_format.parent().write(Behavior.weather_format, "%name: %main %temp°C");
                 }
             } catch (Exception ignored) {}
 
@@ -766,12 +722,19 @@ public class UIManager implements OnTouchListener {
 
                 if(where.contains(",")) {
                     String[] split = where.split(",");
-                    where = "lat=" + split[0] + "&lon=" + split[1];
+                    lastLatitude = Double.parseDouble(split[0]);
+                    lastLongitude = Double.parseDouble(split[1]);
+                    location = Tuils.locationName(mContext, lastLatitude, lastLongitude);
+                    // Fallback to coordinates if geocoding fails
+                    if(location == null || location.trim().length() == 0) {
+                        location = String.format(java.util.Locale.US, "%.2f, %.2f", lastLatitude, lastLongitude);
+                    }
+                    setUrl(lastLatitude, lastLongitude);
                 } else {
-                    where = "id=" + where;
+                    // SMHI requires lat,lon coordinates, not city IDs
+                    Tuils.sendOutput(mContext, "Warning: SMHI requires lat,lon coordinates, not city IDs. Please use 'tuiweather -location lat,lon' format.");
+                    updateText(Label.weather, Tuils.span(mContext, "Invalid location format", XMLPrefsManager.getColor(Theme.weather_color), labelSizes[Label.weather.ordinal()]));
                 }
-
-                setUrl(where);
             }
         }
 
@@ -782,8 +745,9 @@ public class UIManager implements OnTouchListener {
 
             send();
 
-            // Schedule next run only if auto update is enabled
-            if(handler != null && XMLPrefsManager.getBoolean(Behavior.weather_auto_update)) handler.postDelayed(this, weatherDelay);
+            if(handler != null && XMLPrefsManager.getBoolean(Behavior.weather_auto_update)) {
+                handler.postDelayed(this, weatherDelay);
+            }
         }
 
         private void send() {
@@ -792,29 +756,13 @@ public class UIManager implements OnTouchListener {
             Intent i = new Intent(HTMLExtractManager.ACTION_WEATHER);
             i.putExtra(XMLPrefsManager.VALUE_ATTRIBUTE, url);
             i.putExtra(HTMLExtractManager.BROADCAST_COUNT, HTMLExtractManager.broadcastCount);
+            if(location != null) i.putExtra("location", location);
             LocalBroadcastManager.getInstance(mContext.getApplicationContext()).sendBroadcast(i);
         }
 
-        private void setUrl(String where) {
-            // Accept "lat=..&lon=.." and build SMHI endpoint
-            double lat = 0, lon = 0;
-            try {
-                String[] parts = where.split("&");
-                for(String p : parts) {
-                    if(p.startsWith("lat=")) lat = Double.parseDouble(p.substring(4));
-                    else if(p.startsWith("lon=")) lon = Double.parseDouble(p.substring(4));
-                }
-            } catch (Exception ignored) {}
-            url = buildSmhiUrl(lat, lon);
-        }
-
         private void setUrl(double latitude, double longitude) {
-            url = buildSmhiUrl(latitude, longitude);
-        }
-
-        private String buildSmhiUrl(double latitude, double longitude) {
-            // SMHI forecast API expects lon first, then lat
-            return "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/" + longitude + "/lat/" + latitude + "/data.json";
+            // SMHI Coordinates Forecast API: https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{lon}/lat/{lat}/data.json
+            url = "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/" + longitude + "/lat/" + latitude + "/data.json";
         }
     }
 
@@ -918,11 +866,6 @@ public class UIManager implements OnTouchListener {
                     CharSequence s = intent.getCharSequenceExtra(XMLPrefsManager.VALUE_ATTRIBUTE);
                     if(s == null) s = intent.getStringExtra(XMLPrefsManager.VALUE_ATTRIBUTE);
                     if(s == null) return;
-
-                    // Prefix resolved location (if available)
-                    if(location != null && location.length() > 0) {
-                        s = TextUtils.concat(location, ": ", s);
-                    }
 
                     s = Tuils.span(context, s, weatherColor, labelSizes[Label.weather.ordinal()]);
 
@@ -1332,8 +1275,7 @@ public class UIManager implements OnTouchListener {
         if(show[Label.unlock.ordinal()]) {
             unlockTimes = preferences.getInt(UNLOCK_KEY, 0);
 
-            // Match unlock info color to the internal storage label color
-            unlockColor = XMLPrefsManager.getColor(Theme.storage_color);
+            unlockColor = XMLPrefsManager.getColor(Theme.unlock_counter_color);
             unlockFormat = XMLPrefsManager.get(Behavior.unlock_counter_format);
             notAvailableText = XMLPrefsManager.get(Behavior.not_available_text);
             unlockTimeDivider = XMLPrefsManager.get(Behavior.unlock_time_divider);
@@ -1821,12 +1763,8 @@ public class UIManager implements OnTouchListener {
                 cs = TextUtils.concat(cs, t);
 
                 CharSequence time;
-                if(lastUnlocks[c] > 0) {
-                    // Force the unlock time lines to use the same color as the rest of the unlock section
-                    time = TimeManager.instance.getCharSequence(timeGroup, lastUnlocks[c], unlockColor);
-                } else {
-                    time = Tuils.span(mContext, notAvailableText, unlockColor, labelSizes[Label.unlock.ordinal()]);
-                }
+                if(lastUnlocks[c] > 0) time = TimeManager.instance.getCharSequence(timeGroup, lastUnlocks[c]);
+                else time = notAvailableText;
 
                 if(time == null) continue;
 

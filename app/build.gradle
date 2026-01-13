@@ -5,11 +5,7 @@ plugins {
 }
 
 // Move module build output outside OneDrive to avoid file lock issues
-def localAppData = System.getenv("LOCALAPPDATA")
-def externalBuildRoot = localAppData != null
-        ? new File(localAppData, "TUI-ConsoleLauncher-build")
-        : new File(rootProject.projectDir, ".build")
-buildDir = new File(externalBuildRoot, "app")
+buildDir = "${rootProject.projectDir}/.build/app"
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
@@ -36,8 +32,8 @@ android {
         applicationId "ohi.andre.consolelauncher"
         minSdk = libs.versions.minSdk.get().toInteger()
         targetSdk = libs.versions.targetSdk.get().toInteger()
-        versionName "v6.18"
-        versionCode 208
+        versionName "v6.16"
+        versionCode 209
     }
     buildTypes {
         debug {

@@ -21,18 +21,50 @@
 
 - **Weather command (`tuiweather`)**
   - Enable/disable the weather label:
-    - `tuiweather -enable`
-    - `tuiweather -disable`
-  - Set a custom OpenWeatherMap API key:
-    - `tuiweather -set_key <key>`
-  - Manual refresh (only works after you set a custom key):
-    - `tuiweather -update`
-  - Default display format (auto-migrated from older `Weather:`/`Temp:` formats):
-    - `%name: %main %temp°C`
-  - Output example:
-    - `Stockholm: Clear 5.99°C`
-  - Switched to HTTPS for OpenWeatherMap API calls (Android cleartext policy compliance)
-  - Improved internet connectivity checks with fail-open logic
+    - `tuiweather -enable` - Show weather in status bar
+    - `tuiweather -disable` - Hide weather from status bar
+  - Set location:
+    - `tuiweather -location <value>` - Set weather location
+      - **Coordinates required**: `tuiweather -location 59.33,18.06` (lat,lon for Stockholm)
+      - Automatically reverse-geocodes coordinates to display city name
+      - Falls back to showing coordinates if geocoding is unavailable
+  - Manual refresh:
+    - `tuiweather -update` - Force immediate weather update
+  - Automatic updates:
+    - `tuiweather -auto true` - Enable periodic weather updates (default)
+    - `tuiweather -auto false` - Disable periodic updates (manual only)
+  - Tutorial/Documentation:
+    - `tuiweather -tutorial` - Opens SMHI weather data information page
+  
+  **Weather Data Source:**
+  - Uses **SMHI** (Swedish Meteorological Institute) - Official Swedish weather service
+  - Free API with no authentication required
+  - Accurate forecasts for Sweden and surrounding areas
+  - API endpoint: `opendata-download-metfcst.smhi.se/api/category/pmp3g`
+  - Requires coordinates in `lat,lon` format
+  - Configure location via command or in `behavior.xml`: `weather_location`
+  
+  **Display Format:**
+  - Default format: `%name: %main %temp°C`
+  - Format variables:
+    - `%name` - Location name (auto-geocoded from coordinates, e.g., "Stockholm")
+    - `%main` - Weather condition (e.g., "Clear sky", "Overcast")
+    - `%temp` - Temperature in Celsius
+  - Example output: `Stockholm: Overcast -0.8°C`
+  - Configure via `behavior.xml`: `weather_format`
+  
+  **Location Detection:**
+  - Automatically converts coordinates to city names using Android Geocoder
+  - Tries: Locality (city) → Sub-admin area (county) → Admin area (state/province)
+  - Falls back to coordinates if geocoding fails or is unavailable
+  - Requires network access for geocoding functionality
+  
+  **Technical Details:**
+  - HTTPS API calls for security compliance
+  - SMHI forecast JSON parsing with JsonPath
+  - Weather symbol codes (1-27) automatically converted to readable text
+  - Configurable auto-update interval via `weather_update_time` (seconds)
+  - Update control via `weather_auto_update` boolean setting
 
 ### Build System
 - Custom build directory (`.build`) to avoid OneDrive sync conflicts

@@ -984,12 +984,12 @@ public enum Behavior implements XMLPrefsSave {
     weather_key {
         @Override
         public String defaultValue() {
-            return "1f798f99228596c20ccfda51b9771a86";
+            return "deprecated";
         }
 
         @Override
         public String info() {
-            return "The key of your account on OpenWeatherMap. You can keep the default one, or create your custom key (check the wiki)";
+            return "Deprecated: SMHI is now the weather provider and does not require an API key";
         }
 
         @Override
@@ -1165,7 +1165,7 @@ public enum Behavior implements XMLPrefsSave {
 
         @Override
         public String info() {
-            return "The weather update time in seconds (default: 3600).";
+            return "The weather update time in seconds. This can only be used if you\'re using a custom weather key";
         }
 
         @Override
@@ -1176,12 +1176,12 @@ public enum Behavior implements XMLPrefsSave {
     weather_auto_update {
         @Override
         public String defaultValue() {
-            return "false";
+            return "true";
         }
 
         @Override
         public String info() {
-            return "If true, weather auto-refreshes every weather_update_time seconds.";
+            return "If true, weather updates will be scheduled automatically. If false, only manual updates will run.";
         }
 
         @Override

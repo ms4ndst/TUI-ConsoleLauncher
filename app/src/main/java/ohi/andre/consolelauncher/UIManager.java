@@ -711,29 +711,21 @@ public class UIManager implements OnTouchListener {
 
     private class WeatherRunnable implements Runnable {
 
-        String key;
         String url;
 
         public WeatherRunnable() {
 
-            if(XMLPrefsManager.wasChanged(Behavior.weather_key, false)) {
-                weatherDelay = XMLPrefsManager.getInt(Behavior.weather_update_time);
-                key = XMLPrefsManager.get(Behavior.weather_key);
-            } else {
-                key = Behavior.weather_key.defaultValue();
-                weatherDelay = 60 * 60;
-            }
-            weatherDelay *= 1000;
+            // Use configured update time regardless of API key (SMHI doesn't require keys)
+            weatherDelay = XMLPrefsManager.getInt(Behavior.weather_update_time) * 1000;
 
-            // Force update to new weather format with location, condition, and temperature
+            // Ensure a sensible default weather format that doesn't rely on provider-specific fields
             try {
                 String currentFormat = XMLPrefsManager.get(Behavior.weather_format);
-                // Update if format is old (contains "Weather:" or "Temp:") or missing %name
-                if(currentFormat == null || currentFormat.trim().length() == 0 || 
-                   !currentFormat.contains("%name") || 
-                   currentFormat.contains("Weather:") || 
+                // Update if format is empty or clearly old
+                if(currentFormat == null || currentFormat.trim().length() == 0 ||
+                   currentFormat.contains("Weather:") ||
                    currentFormat.contains("Temp:")) {
-                    Behavior.weather_format.parent().write(Behavior.weather_format, "%name: %main %temp°C");
+                    Behavior.weather_format.parent().write(Behavior.weather_format, "%main %temp°C");
                 }
             } catch (Exception ignored) {}
 
@@ -790,7 +782,8 @@ public class UIManager implements OnTouchListener {
 
             send();
 
-            if(handler != null) handler.postDelayed(this, weatherDelay);
+            // Schedule next run only if auto update is enabled
+            if(handler != null && XMLPrefsManager.getBoolean(Behavior.weather_auto_update)) handler.postDelayed(this, weatherDelay);
         }
 
         private void send() {
@@ -803,11 +796,25 @@ public class UIManager implements OnTouchListener {
         }
 
         private void setUrl(String where) {
-            url = "https://api.openweathermap.org/data/2.5/weather?" + where + "&appid=" + key + "&units=" + XMLPrefsManager.get(Behavior.weather_temperature_measure);
+            // Accept "lat=..&lon=.." and build SMHI endpoint
+            double lat = 0, lon = 0;
+            try {
+                String[] parts = where.split("&");
+                for(String p : parts) {
+                    if(p.startsWith("lat=")) lat = Double.parseDouble(p.substring(4));
+                    else if(p.startsWith("lon=")) lon = Double.parseDouble(p.substring(4));
+                }
+            } catch (Exception ignored) {}
+            url = buildSmhiUrl(lat, lon);
         }
 
         private void setUrl(double latitude, double longitude) {
-            url = "https://api.openweathermap.org/data/2.5/weather?" + "lat=" + latitude + "&lon=" + longitude + "&appid=" + key + "&units=" + XMLPrefsManager.get(Behavior.weather_temperature_measure);
+            url = buildSmhiUrl(latitude, longitude);
+        }
+
+        private String buildSmhiUrl(double latitude, double longitude) {
+            // SMHI forecast API expects lon first, then lat
+            return "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/" + longitude + "/lat/" + latitude + "/data.json";
         }
     }
 
@@ -911,6 +918,11 @@ public class UIManager implements OnTouchListener {
                     CharSequence s = intent.getCharSequenceExtra(XMLPrefsManager.VALUE_ATTRIBUTE);
                     if(s == null) s = intent.getStringExtra(XMLPrefsManager.VALUE_ATTRIBUTE);
                     if(s == null) return;
+
+                    // Prefix resolved location (if available)
+                    if(location != null && location.length() > 0) {
+                        s = TextUtils.concat(location, ": ", s);
+                    }
 
                     s = Tuils.span(context, s, weatherColor, labelSizes[Label.weather.ordinal()]);
 

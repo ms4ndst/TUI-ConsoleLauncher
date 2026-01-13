@@ -29,9 +29,8 @@ public class tuiweather extends ParamCommand {
             public String exec(ExecutePack pack) {
                 if(!XMLPrefsManager.getBoolean(Ui.show_weather)) {
                     return pack.context.getString(R.string.weather_disabled);
-                } else if(!XMLPrefsManager.wasChanged(Behavior.weather_key, false)) {
-                    return pack.context.getString(R.string.weather_cant_update);
                 } else {
+                    // Always allow manual update (no API key required with SMHI)
                     LocalBroadcastManager.getInstance(pack.context.getApplicationContext()).sendBroadcast(new Intent(UIManager.ACTION_WEATHER_MANUAL_UPDATE));
                 }
 
@@ -65,19 +64,22 @@ public class tuiweather extends ParamCommand {
         tutorial {
             @Override
             public String exec(ExecutePack pack) {
-                pack.context.startActivity(Tuils.webPage("https://github.com/Andre1299/TUI-ConsoleLauncher/wiki/Weather/_edit"));
+                pack.context.startActivity(Tuils.webPage("https://www.smhi.se/data"));
                 return null;
             }
         },
-        set_key {
+        auto {
             @Override
             public int[] args() {
-                return new int[] {CommandAbstraction.PLAIN_TEXT};
+                return new int[] {CommandAbstraction.BOOLEAN};
             }
 
             @Override
             public String exec(ExecutePack pack) {
-                Behavior.weather_key.parent().write(Behavior.weather_key, pack.getString());
+                boolean enable = pack.getBoolean();
+                Behavior.weather_auto_update.parent().write(Behavior.weather_auto_update, String.valueOf(enable));
+                // Trigger an immediate refresh; periodic scheduling will be handled by UIManager based on the new flag
+                LocalBroadcastManager.getInstance(pack.context.getApplicationContext()).sendBroadcast(new Intent(UIManager.ACTION_WEATHER_MANUAL_UPDATE));
                 return null;
             }
         };

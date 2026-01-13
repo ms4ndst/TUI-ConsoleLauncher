@@ -411,50 +411,106 @@ public class HTMLExtractManager {
 
                     if(weatherArea) {
                         String json = Tuils.inputStreamToString(inputStream);
-//                        json = json.replaceAll("\"temp\":([\\d\\.]*)", "\"temp\":-4.3");
 
                         CharSequence o = Tuils.span(weatherFormat, weatherColor);
 
-                        Matcher m = weatherFormatPattern.matcher(weatherFormat);
-                        while(m.find()) {
-                            String name = m.group(1);
-                            String delay = m.group(2);
-                            if(delay == null || delay.length() == 0) delay = "1";
-                            String converter = m.group(3);
+                        if(url.contains("smhi.se")) {
+                            // Parse SMHI forecast JSON: first timeSeries entry
+                            String conditionText = null;
+                            Double tempC = null;
+                            try {
+                                // Temperature (C)
+                                Object tObj = JsonPath.read(json, "$.timeSeries[0].parameters[?(@.name=='t')].values[0]");
+                                if(tObj instanceof List && !((List) tObj).isEmpty()) tempC = toDouble(((List) tObj).get(0));
+                                else tempC = toDouble(tObj);
 
-                            int stopAt = Integer.parseInt(delay);
-
-                            Pattern p = Pattern.compile("\"" + name + "\":(?:\"([^\"]+)\"|(-?\\d+\\.?\\d*))");
-                            Matcher m1 = p.matcher(json);
-                            int c = 1;
-                            while(m1.find()) {
-                                if(c == stopAt) {
-                                    String value = m1.group(1);
-                                    if(value == null || value.length() == 0) value = m1.group(2);
-
-                                    if(converter != null && converter.length() > 0) {
-                                        try {
-                                            double d = Double.parseDouble(value);
-                                            d = Tuils.textCalculus(d, converter);
-                                            value = String.format("%.2f", d);
-                                        } catch (Exception e) {
-                                            Tuils.log(e);
-                                        }
-                                    }
-
-                                    o = TextUtils.replace(o, new String[] {m.group(0)}, new String[] {delimiterStart + value + delimiterEnd});
-
-                                    break;
-                                } else c++;
+                                // Weather symbol code (Wsymb2)
+                                Object sObj = JsonPath.read(json, "$.timeSeries[0].parameters[?(@.name=='Wsymb2')].values[0]");
+                                Integer code = null;
+                                if(sObj instanceof List && !((List) sObj).isEmpty()) code = toInt(((List) sObj).get(0));
+                                else code = toInt(sObj);
+                                conditionText = code != null ? smhiSymbolToText(code) : null;
+                            } catch (Exception e) {
+                                Tuils.log(e);
                             }
+
+                            if(tempC == null) tempC = 0d;
+                            if(conditionText == null) conditionText = "";
+
+                            Matcher m = weatherFormatPattern.matcher(weatherFormat);
+                            while(m.find()) {
+                                String name = m.group(1);
+                                String delay = m.group(2); // ignored in SMHI mode
+                                String converter = m.group(3);
+
+                                String value = null;
+                                if("temp".equalsIgnoreCase(name) || "t".equalsIgnoreCase(name)) {
+                                    double d = tempC;
+                                    if(converter != null && converter.length() > 0) {
+                                        try { d = Tuils.textCalculus(d, converter); } catch (Exception ex) { Tuils.log(ex); }
+                                    }
+                                    value = String.format("%.1f", d);
+                                } else if("main".equalsIgnoreCase(name) || "condition".equalsIgnoreCase(name) || "wsymb2".equalsIgnoreCase(name)) {
+                                    value = conditionText;
+                                } else if("name".equalsIgnoreCase(name)) {
+                                    // SMHI response doesn't include a place name; leave empty
+                                    value = Tuils.EMPTYSTRING;
+                                }
+
+                                if(value != null) {
+                                    o = TextUtils.replace(o, new String[] {m.group(0)}, new String[] {delimiterStart + value + delimiterEnd});
+                                }
+                            }
+
+                            o = replaceLinkColorReplace(context, o, url);
+                            o = removeDelimiter(o);
+
+                            Intent i = new Intent(UIManager.ACTION_WEATHER);
+                            i.putExtra(XMLPrefsManager.VALUE_ATTRIBUTE, o);
+                            LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(i);
+                        } else {
+                            // Legacy provider (e.g., OpenWeatherMap) - keep generic key-based extraction
+                            Matcher m = weatherFormatPattern.matcher(weatherFormat);
+                            while(m.find()) {
+                                String name = m.group(1);
+                                String delay = m.group(2);
+                                if(delay == null || delay.length() == 0) delay = "1";
+                                String converter = m.group(3);
+
+                                int stopAt = Integer.parseInt(delay);
+
+                                Pattern p = Pattern.compile("\"" + name + "\":(?:\"([^\"]+)\"|(-?\\d+\\.?\\d*))");
+                                Matcher m1 = p.matcher(json);
+                                int c = 1;
+                                while(m1.find()) {
+                                    if(c == stopAt) {
+                                        String value = m1.group(1);
+                                        if(value == null || value.length() == 0) value = m1.group(2);
+
+                                        if(converter != null && converter.length() > 0) {
+                                            try {
+                                                double d = Double.parseDouble(value);
+                                                d = Tuils.textCalculus(d, converter);
+                                                value = String.format("%.2f", d);
+                                            } catch (Exception e) {
+                                                Tuils.log(e);
+                                            }
+                                        }
+
+                                        o = TextUtils.replace(o, new String[] {m.group(0)}, new String[] {delimiterStart + value + delimiterEnd});
+
+                                        break;
+                                    } else c++;
+                                }
+                            }
+
+                            o = replaceLinkColorReplace(context, o, url);
+                            o = removeDelimiter(o);
+
+                            Intent i = new Intent(UIManager.ACTION_WEATHER);
+                            i.putExtra(XMLPrefsManager.VALUE_ATTRIBUTE, o);
+                            LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(i);
                         }
-
-                        o = replaceLinkColorReplace(context, o, url);
-                        o = removeDelimiter(o);
-
-                        Intent i = new Intent(UIManager.ACTION_WEATHER);
-                        i.putExtra(XMLPrefsManager.VALUE_ATTRIBUTE, o);
-                        LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(i);
                     } else if(pathType == StoreableValue.Type.xpath) {
                         HtmlCleaner cleaner = new HtmlCleaner();
                         CleanerProperties props = cleaner.getProperties();
@@ -714,7 +770,48 @@ public class HTMLExtractManager {
     static String delimiterStart = "@#&", delimiterEnd = new StringBuilder(delimiterStart).reverse().toString(), optionalValueSeparator;
     static String[] delimiterArray = {delimiterStart, delimiterEnd}, delimiterReplacementArray = {Tuils.EMPTYSTRING, Tuils.EMPTYSTRING};
 
-    public static CharSequence replaceLinkColorReplace(Context context, CharSequence original, String url) {
+    private static Double toDouble(Object o) {
+        try { return o == null ? null : Double.parseDouble(o.toString()); } catch (Exception e) { return null; }
+    }
+
+    private static Integer toInt(Object o) {
+        try { return o == null ? null : Integer.parseInt(o.toString()); } catch (Exception e) { return null; }
+    }
+
+    private static String smhiSymbolToText(int code) {
+        switch (code) {
+            case 1: return "Clear sky";
+            case 2: return "Nearly clear";
+            case 3: return "Variable cloudiness";
+            case 4: return "Halfclear sky";
+            case 5: return "Cloudy";
+            case 6: return "Overcast";
+            case 7: return "Fog";
+            case 8: return "Light rain showers";
+            case 9: return "Moderate rain showers";
+            case 10: return "Heavy rain showers";
+            case 11: return "Thunderstorm";
+            case 12: return "Light sleet showers";
+            case 13: return "Moderate sleet showers";
+            case 14: return "Heavy sleet showers";
+            case 15: return "Light snow showers";
+            case 16: return "Moderate snow showers";
+            case 17: return "Heavy snow showers";
+            case 18: return "Light rain";
+            case 19: return "Moderate rain";
+            case 20: return "Heavy rain";
+            case 21: return "Thunder";
+            case 22: return "Light sleet";
+            case 23: return "Moderate sleet";
+            case 24: return "Heavy sleet";
+            case 25: return "Light snow";
+            case 26: return "Moderate snow";
+            case 27: return "Heavy snow";
+            default: return "Unknown";
+        }
+    }
+
+    public static String replaceLinkColorReplace(Context context, CharSequence original, String url) {
         Matcher m = colorPattern.matcher(original);
         while(m.find()) {
             try {

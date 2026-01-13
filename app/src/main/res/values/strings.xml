@@ -386,11 +386,11 @@
         \n\t* silent -> 0
         \n\t* vibrate -> 1
         \n\t* normal -> 2</string>
-    <string name="help_weather">- update -> perform a manual update (this won\'t work unless you set a custom weather key)
+    <string name="help_weather">- update -> perform a manual update
         \n-enable -> enable weather
         \n-disable -> disable weather
-        \n-tutorial -> open the weather tutorial webpage
-        \n-set_key [key] -> set a custom weather key</string>
+        \n-auto [true/false] -> toggle auto update (default: false, interval: 1h)
+        \n-tutorial -> open the SMHI data page</string>
     <string name="help_beep">Emit a \"beep\".
         \n\nUsage:
         \n$ beep</string>

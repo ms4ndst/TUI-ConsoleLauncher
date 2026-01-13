@@ -1165,12 +1165,28 @@ public enum Behavior implements XMLPrefsSave {
 
         @Override
         public String info() {
-            return "The weather update time in seconds. This can only be used if you\'re using a custom weather key";
+            return "The weather update time in seconds (default: 3600).";
         }
 
         @Override
         public String type() {
             return XMLPrefsSave.INTEGER;
+        }
+    },
+    weather_auto_update {
+        @Override
+        public String defaultValue() {
+            return "false";
+        }
+
+        @Override
+        public String info() {
+            return "If true, weather auto-refreshes every weather_update_time seconds.";
+        }
+
+        @Override
+        public String type() {
+            return XMLPrefsSave.BOOLEAN;
         }
     },
     location_update_mintime {

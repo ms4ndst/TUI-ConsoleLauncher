@@ -1,51 +1,42 @@
 # Original T-UI Linux CLI Launcher
 
-<a href="https://f-droid.org/packages/ohi.andre.consolelauncher">
+<a href="https://play.google.com/store/apps/details?id=ohi.andre.consolelauncher"><img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height="60"></a>    <a href="https://f-droid.org/packages/ohi.andre.consolelauncher">
     <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
     height="60">
 </a>
 
-## Screenshot
-
-![T-UI Screenshot](images/screenshot.png)
-
-## Current Version
-- **v6.18** (`versionCode` **208**)
-
 ## Compatibility
-- **minSdk: 21**
-- **targetSdk: 35** (Android 15)
-- Gradle **8.10.2**, AGP **8.7.0**, Kotlin **2.0.21**
-- AndroidX
+
+✅ **Android 14+ (API 35) Compatible**
+- Updated to Gradle 8.10.2, AGP 8.7.0, Kotlin 2.0.21
+- Full AndroidX migration
+- Scoped storage support
+- Modern security and permission handling
 
 ## Recent Updates (January 2026)
 
-### Themes (local palette)
-- `theme -view` now lists built-in themes **alphabetically and numbered**.
-- `theme -apply <number>` applies the selected theme from that list and **reloads** the UI.
-- `theme -viewe` is kept as an alias for `theme -view`.
-- `theme -apply <string>` still supports the legacy online theme ID/name behavior.
-
-### System info UI tweaks
-- RAM line shows additional device info:
-  - `Android: <release> (API <sdk>)` (yellow)
-  - `Build: <Build.DISPLAY>` (pink)
-- Unlock information now uses the **same color as the Internal Storage label**.
-
 ### Network & Weather Improvements
-- **Wi-Fi Status Display**: Fixed Wi-Fi detection using NetworkCapabilities API with legacy fallback for older devices. Now correctly shows connected Wi-Fi SSID instead of "no internet connection".
-- **Weather Command (`tuiweather`)**: Enhanced weather output format
-  - Now displays: `[Location]: [Condition] [Temperature]°C`
-  - Example: `Stockholm: Clear 5.99°C`
+- **Wi-Fi Status Display**: Fixed Wi-Fi detection using NetworkCapabilities API with legacy fallback for older devices. Now correctly shows connected Wi-Fi SSID instead of "no internet connection"
+
+- **Weather command (`tuiweather`)**
+  - Enable/disable the weather label:
+    - `tuiweather -enable`
+    - `tuiweather -disable`
+  - Set a custom OpenWeatherMap API key:
+    - `tuiweather -set_key <key>`
+  - Manual refresh (only works after you set a custom key):
+    - `tuiweather -update`
+  - Default display format (auto-migrated from older `Weather:`/`Temp:` formats):
+    - `%name: %main %temp°C`
+  - Output example:
+    - `Stockholm: Clear 5.99°C`
   - Switched to HTTPS for OpenWeatherMap API calls (Android cleartext policy compliance)
   - Improved internet connectivity checks with fail-open logic
-- **Format Migration**: Existing installations automatically migrate to new weather display format.
 
 ### Build System
-- Module build output is moved outside the repo on Windows to avoid OneDrive file lock issues:
-  - `%LOCALAPPDATA%\TUI-ConsoleLauncher-build\app`
-- If `./gradlew clean` fails due to locked files, build without it (e.g. `assembleRelease` / `installRelease`).
+- Custom build directory (`.build`) to avoid OneDrive sync conflicts
+- Updated ProGuard rules for R8 compatibility with explicit constructor patterns
 
 ## Build Instructions
 
@@ -64,32 +55,27 @@ cd TUI-ConsoleLauncher
 
 **Build debug APK:**
 ```bash
-./gradlew :app:assembleDebug
+./gradlew assembleDebug
 ```
 
 **Build release APK:**
 ```bash
-./gradlew :app:assembleRelease
+./gradlew assembleRelease
 ```
 
 **Install on connected device:**
 ```bash
-./gradlew :app:installDebug
+./gradlew installDebug
 ```
 
-**Install release on connected device:**
-```bash
-./gradlew :app:installRelease
-```
-
-The APK will be generated under Gradle's module build directory:
-- On Windows (default in this repo): `%LOCALAPPDATA%\TUI-ConsoleLauncher-build\app\outputs\apk\...`
-- Otherwise: `app/build/outputs/apk/...` (or the configured `buildDir`)
+The APK will be generated in:
+- Debug: `app/build/outputs/apk/debug/app-debug.apk`
+- Release: `app/build/outputs/apk/release/app-release.apk`
 
 ### Windows Users
 Use `gradlew.bat` instead of `./gradlew`:
 ```powershell
-.\gradlew.bat :app:assembleDebug
+.\gradlew.bat assembleDebug
 ```
 
 ### Release Signing
@@ -106,7 +92,7 @@ storeFile=../release.keystore
 **For Development:**
 The included `release.keystore` uses default credentials for convenience. Release builds are automatically signed when you run:
 ```bash
-./gradlew :app:assembleRelease
+./gradlew assembleRelease
 ```
 
 **For Production:**
